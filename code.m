@@ -16,12 +16,19 @@ griFileName = 'gri.xlsx';
 logFileName = 'log.xlsx';
 
 logRange = [15998 17603];
+logDepthIndex = 1;
+logCgrIndex = 4;
 logRhobIndex = 6;
+logUranIndex = 7;
 xrdTocIndex = 3;
 xrdDepthIndex = 1;
 xrdClayRange = [4 10];
 xrdNonClayRange = [11 14];
-griDepthIndex = 
+griDepthIndex = 2;
+griGrainDensityIndex = 7;
+griBulkDensityIndex = 2;
+
+grXrdPlotRange = [2 3];
 
 XRD = xlsread(xrdFileName);
 GRI = xlsread(griFileName);
@@ -36,12 +43,14 @@ xrdClayWeightPercent = XRD(:,xrdClayRange(1,1):xrdClayRange(1,2));
 xrdNonClayWeightPercent = XRD(:,xrdNonClayRange(1,1):xrdNonClayRange(1,2));
 
 weightPercentCombine = cat(2,xrdClayWeightPercent, xrdNonClayWeightPercent);
+numberOfMinerals = size(weightPercentCombine,2);
 
 weightPercentKerogen = 1.1*xrdToc;
 weightPercentKerogenNormFactor = (1-weightPercentKerogen/100);
 
 %normalize by adding kerogen weight percentage to xrd mineral weight
 weightPercentsNormalized = zeros(size(weightPercentCombine));
+weightByDensityNormalized = zeros(size(weightPercentCombine));
 XRDGrainDensityWithoutKerogen = zeros(size(xrdClayWeightPercent,1),1);
 XRDGrainDensityWithKerogen = zeros(size(xrdClayWeightPercent,1),1);
 
@@ -49,36 +58,41 @@ for i=1:size(weightPercentCombine,1)
     temp = 0;
     for j=1:size(weightPercentCombine,2)    
    		weightPercentsNormalized(i,j) = weightPercentKerogenNormFactor(i,1).*weightPercentCombine(i,j);
-   		temp = temp + weightPercentsNormalized(i,j)./densities(1,j);
+   		weightByDensityNormalized(i,j) = weightPercentsNormalized(i,j)./densities(1,j);
+   		temp = temp + weightByDensityNormalized(i,j);
     end
     XRDGrainDensityWithoutKerogen(i,1) = 100/temp;
     XRDGrainDensityWithKerogen(i,1) = 100/(temp + weightPercentKerogen(i,1)/kerogen);
 end
 % -------------------------------------------------------------------------
 
+griDepth = GRI(:,griDepthIndex);
+griGrainDensity = GRI(:,griGrainDensityIndex);
+griBulkDensity = GRI(:,griBulkDensityIndex);
+
 %grain density xrd vs gri calibration at same depth data
 c=[];
 xrdNonClayNormSum = sum(weightPercentsNormalized(:,1:size(xrdClayWeightPercent,2)),2);
 xrdClayNormSum=sum(weightPercentsNormalized(:,(size(xrdClayWeightPercent,2)+1):size(weightPercentCombine,2)),2);
+cIndex = 0;
 for j= 1:length(GRI)       
     for  k= 1:length(XRD)
-        % if xrdDepth(k,1)==DEPTH_gri(j,1)
-%             c(j,1)=DEPTH_gri(j,1);%depth
-%             c(j,2)=GRDENSITY_gri(j,1);%graindensity from GRI file
-%             c(j,3)=rho_m(k,1);%grain density from xrd calculated
-%             c(j,4)=xrdNonClayNormSum(k,1);%nclays from xrd wt%
-%             c(j,5)=xrdNonClayNormSum(k,1);%clays from xrd
-%             c(j,6)=wk(k,1);%kerogen
-%             c(j,8)=BLKD_gri(j,1);
-%             c(j,11:21)=rho_m_inverse(k,:);% wi/rhoi all
-%             c(j,22)=rho_m_star(k,1);
-%             c(23:27)=Wi_combined(k,1:5);
-%             c(j,28:29)=Wi_combined(k,6:7);%heavies marc and pyrite    
-        % end
+        if griDepth(j,1)==xrdDepth(k,1)
+        	cIndex = cIndex+1;
+            c(cIndex,1) = griDepth(j,1);
+            c(cIndex,2) = griGrainDensity(j,1);
+            c(cIndex,3) = XRDGrainDensityWithKerogen(k,1);
+            c(cIndex,4) = xrdNonClayNormSum(k,1);
+            c(cIndex,5) = xrdClayNormSum(k,1);
+            c(cIndex,6) = weightPercentKerogen(k,1);
+            c(cIndex,8) = griBulkDensity(j,1);
+            c(cIndex,9:8+numberOfMinerals) = weightByDensityNormalized(k,:);
+            c(cIndex,9+numberOfMinerals) = XRDGrainDensityWithoutKerogen(k,1);  
+        end
     end 
 end
 
-% c(:,7)=c(:,6)./1.1;% TOC
+c(:,7) = c(cIndex,6)/1.1;
 % rho_m_inverse_common=c(:,11:21);
 % blkd_gri_common=c(:,8);
 % nclays_common=c(:,4);
@@ -101,59 +115,48 @@ end
 
 
 
-% format long g
-% hold on 
-% rhog_gr_common=c(:,2);
-% rhog_xrd_common=c(:,3);
+format long g
+hold on 
+plot (c(:,2),c(:,3),'o')
+xlim(grXrdPlotRange);
+ylim(grXrdPlotRange);
 
-% plot (rhog_gr_common,rhog_xrd_common,'o')
-% xlim([2 3]);
-% ylim([2 3]);
-% hold on 
+hold on 
+%y=x line
+x=grXrdPlotRange(1,1):0.1:grXrdPlotRange(1,2);
+y=grXrdPlotRange(1,1):0.1:grXrdPlotRange(1,2);
+plot(x,y)
 
-% %y=x line
-% x=0:0.1:3;
-% y=0:0.1:3;
-% plot(x,y)
+figure; % start different figure
 
+logdepth = LOG(logRange,logDepthIndex);
+CGR = LOG(logRange,logCgrIndex);
+UR = LOG(logRange,logUranIndex);
 
+subplot (1,10,1) 	%GR
+plot(CGR,logdepth,'c') %ECGR
+axis ij
+% xlim([min(CGR,[],'omitnan') max(CGR,[],'omitnan')])
+xlim([0 400])
+ylim([min(logdepth) max(logdepth)])
+xlabel('GR & UR')
 
-% figure; 
-
-% CGR=welllogs(:,2)-welllogs(:,10);
-% welldepth=welllogs(16000:17605,1);
-% j=16000:17605;  % set no of points
-% a=2800;b=3100;% set depth  limits for axis
-
-% for  i=1:10
-%    welllogs_new(j,i)=welllogs(j,i);
-% end
-
-
-% subplot (1,10,1)%GR
-% plot(welllogs_new(j,2),welldepth,'c')%ECGR(env. corrected) or GR or SGR 
-% hold on 
-% plot(CGR(j),welllogs_new(j,1),'k')%CGR=ECGR-UR
-% axis ij
-% xlim([0 400])
-% ylim([a b])
-% xlabel('GR & UR')
-
-% ax1 = gca;
-% ax1_pos = ax1.Position; % position of first axes
-% ax2 = axes('Position',ax1_pos,...
-%     'XAxisLocation','top',...
-%     'YAxisLocation','right',...
-%     'Color','none');
-% hold on 
-% plot(welllogs_new(j,10),welllogs_new(j,1),'Parent',ax2,'Color','r')%UR
-% ax2.XColor = 'r';
-% ax2.YColor = 'r';
-% axis ij
-% xlim([0 400])
-% ylim([a b])
-% format long
-%  hold on 
+ax1 = gca;
+ax1_pos = get(ax1,'Position'); % position of first axes
+ax2 = axes('Position',ax1_pos,...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'Color','none');
+hold on 
+plot(UR,logdepth,'Parent',ax2,'Color','r')%UR
+set(ax2,'XColor','r');
+set(ax2,'YColor','r');
+axis ij
+% xlim([min(UR,[],'omitnan') max(UR,[],'omitnan')])
+xlim([0 400])
+ylim([min(logdepth) max(logdepth)])
+format long
+hold on 	
  
 %  ax3 = axes('Position',ax1_pos,...
 %     'XAxisLocation','top',...
