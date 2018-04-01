@@ -1,1 +1,1 @@
-# shale
+# shale calculation - Gurkirat Dissertation
