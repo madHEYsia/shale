@@ -3,8 +3,8 @@ close all;
 clc;
 
 xrdFileName = 'xrd.xls';
-griFileName = 'gri.xls';
-logFileName = 'log.xls';
+griFileName = 'gri.xlsx';
+logFileName = 'log.xlsx';
 
 XRD = xlsread(xrdFileName);
 GRI = xlsread(griFileName);
