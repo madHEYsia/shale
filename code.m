@@ -16,6 +16,8 @@ griFileName = 'gri.xlsx';
 logFileName = 'log.xlsx';
 
 logDepthIndex = 1;
+logDreshIndex = 2;
+logDtcIndex = 3;
 logEcgrIndex = 4;
 logNphiIndex = 5;
 logRhobIndex = 6;
@@ -32,6 +34,8 @@ logEcgrUrXaxisRange = [0 400];
 logDepthRange = [2800 3100];
 logNphiXaxisRange = [-0.15 0.45];
 logRhobXaxisRange = [1.8 2.9];
+logDtcXaxisRange = [0 150];
+logDreshXaxisRange = [0.25 2500];
 griXrdPlotRange = [2 3];
 
 XRD = xlsread(xrdFileName);
@@ -191,7 +195,7 @@ format long
 
 ax1 = gca;
 ax1_pos = get(ax1,'Position'); 
-ax2 = axes('Position',[1.03*ax1_pos(1,1) ax1_pos(1,2) 0.76*ax1_pos(1,3) ax1_pos(1,4)],...
+ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) 0.9*ax1_pos(1,3) ax1_pos(1,4)],...
     'XAxisLocation','top',...
     'YAxisLocation','right',...
     'Color','none');
@@ -205,33 +209,36 @@ set(ax2,'YColor','r');
 set(ax2,'YTick',[]);
 hold on 
 axis ij 
-legend('Nphi')
+legend('RHOB')
 %------------------------------------------------------------------------
 
-% %sonic and resis passeys:-
-% subplot (1,10,4)%sonic
-% plot(z_DTC(j),welllogs_new(j,1),'g')
-% xlim([0 150])
-% ylim([a b])
-% axis ij
-% set(gca, 'XDir','reverse')
-% format long
+%sonic and resis passeys:-
+subplot (1,10,4)%sonic
+logDtc = LOG(logRange(1,1):logRange(1,2),logDtcIndex);
+plot(logDtc, logdepth,'g')
+xlim([logDtcXaxisRange(1,1) logDtcXaxisRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+axis ij
+set(gca, 'XDir','reverse')
+format long
 
-% ax1 = gca;
-% ax1_pos = ax1.Position; % position of first axes
-% ax2 = axes('Position',ax1_pos,...
-%     'XAxisLocation','top',...
-%     'YAxisLocation','right',...
-%     'Color','none');
-% hold on 
-% semilogx(DRESHOHMM(j,1),welllogs_new(j,1),'Color','r')%deep resistivity.
-% axis([0.25 2500 a b])
-% set(ax2,'xscale','log');
-% axis ij
-% format long
-% legend('sonic')
-% hold on 
-% %------------------------------------------------------------------------
+ax1 = gca;
+ax1_pos = get(ax1,'Position'); % position of first axes
+ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) 0.9*ax1_pos(1,3) ax1_pos(1,4)],...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'Color','none');
+hold on 
+logDresh = LOG(logRange(1,1):logRange(1,2),logDreshIndex);
+semilogx(logDresh, logdepth, 'Color', 'r')%deep resistivity.
+axis([logDreshXaxisRange(1,1) logDreshXaxisRange(1,2) logDepthRange(1,1) logDepthRange(1,2)])
+set(ax2,'xscale','log');
+axis ij
+format long
+legend('sonic')
+xlabel('Sonic and resistivity')
+hold on 
+%------------------------------------------------------------------------
 
 % vsh=(CGR-80)./(190-80);
 % subplot (1,10,5)%vshale
