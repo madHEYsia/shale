@@ -37,11 +37,17 @@ logDreshXaxisRange = [0.25 2500];
 logVshaleXaxisRange = [-1 2];
 xrdNonClayRange = [4 10];
 xrdClayRange = [11 14];
+xrdTocPasseyXaxisRange = [-1 10];
 griXrdPlotRange = [2 3];
 
-logSandLine = 80;
-logShaleLine = 190;
+logSandLineHist = 80;
+logShaleLineHist = 190;
 clayFactor = 0.45;
+dReshBaseHist = 35;
+dtcBaseHist = 60;
+levelOfMaturity = 12;
+scalingFactor1 = 70;
+scalingFactor2 = 0.75;
 
 LOG = xlsread(logFileName);
 XRD = xlsread(xrdFileName);
@@ -225,7 +231,7 @@ xlabel('Sonic and resistivity')
 hold on 
 %------------------------------------------------------------------------
 
-logVshale = (logECGR-logSandLine)./(logShaleLine-logSandLine);
+logVshale = (logECGR-logSandLineHist)./(logShaleLineHist-logSandLineHist);
 subplot (1,10,5)%vshale
 plot(logVshale,logdepth)
 xlabel('Vsh Vcl XrdTcl')
@@ -255,66 +261,24 @@ clayVolumeSum = clayVolumePercentageSum/100;
 
 plot(clayVolumeSum, c(:,1),'ok')
 legend('Vsh','Vcl','XRDclay')
+
 %------------------------------------------------------------------------
+%Passeys TOC
+deltaLogR = log(logDresh./dReshBaseHist)+0.02.*(logDtc - dtcBaseHist);
+tocPassey = scalingFactor1.*deltaLogR.*10.^(0.297-0.1688.*levelOfMaturity)+scalingFactor2;
 
-% rho_sh=2.71; rho_sand=2.65;
-% phi=(zRHOB(j)-(rho_sh.*logVshale(j)+rho_sand.*(1-logVshale(j))))./(1-(rho_sh.*logVshale(j)+rho_sand.*(1-logVshale(j))));
-% subplot (1,10,6)%porosity
-% plot(phi,welllogs_new(j,1),'k')
-% xlabel('phi')
-% xlim([-0.5 0.5])
-% ylim([a b])
-% axis ij
-% format long
-% hold on
-% plot(POR_gri,DEPTH_gri,'og')
-% xlim([-0.5 0.5])
-% ylim([a b])
-% axis ij
-% format long
-% legend('phi_Vsh','GRI')
-
-% %-------    ----   ------       --------     ------    -------   ------   --------   --------
-% hold on 
-% grain_withouttoc=c(:,22);
-
-% grain_withouttoc(grain_withouttoc==0)=NaN;
-% grain_withouttoc(grain_withouttoc==0)=NaN;
-% plot(grain_withouttoc,volume_TCLAY,'o')
-% xlim([2.4 3])
-% ylim([0 0.55])
-
-
-
-% %{
-
-% N=rho_m_star-rhob.*(rho_m_star.*toc./rho_ke-toc+1);
-% D=rho_m_star-rho_fl+rho_m_star.*toc.*(1-rho_m_star./rho_ke);
-% phi=N./D;
-% plot()
-% %}
-% %------------------------------------------------------------------------
-%  %Passeys TOC
-%  DRESH=DRESHOHMM(j,1);
-%  DRESH_base=35; %from histogram or graph
-%  DTC=z_DTC(j,1);
-%  DTC_base=60; %from histogram or graph
-%  LOM=12;SF1=70;SF2=0.75;
-% DLogR=log(DRESH./DRESH_base)+0.02.*(DTC-DTC_base);
-% toc_passey=SF1.*DLogR.*10.^(0.297-0.1688.*LOM)+SF2;
-
-% subplot (1,10,7)%TOC passeys and XRD;
-% plot(toc_passey,welllogs_new(j,1),'r')
-% xlim([0 10])
-% ylim([a b])
-% hold on 
-% plot(c(:,7),c(:,1),'ok')
+subplot (1,10,6)%TOC passeys and XRD;
+plot(tocPassey, logdepth,'r')
+xlim([xrdTocPasseyXaxisRange(1,1) xrdTocPasseyXaxisRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+hold on 
+plot(c(:,7),c(:,1),'ok')
 % xlim([-1 10])
-% ylim([a b])
-% axis ij 
-% hold on 
-% xlabel('TOC')
-% legend('TOC_Passey','TOC_XRD')
+% ylim([logDepthRange(1,1) logDepthRange(1,2)])
+axis ij 
+hold on 
+xlabel('TOC')
+legend('TOC_Passey','TOC_XRD')
 
 % %------------------------------------------------------------------------
 
