@@ -17,6 +17,7 @@ logFileName = 'log.xlsx';
 
 logDepthIndex = 1;
 logEcgrIndex = 4;
+logNphiIndex = 5;
 logRhobIndex = 6;
 logUranIndex = 7;
 xrdTocIndex = 3;
@@ -27,8 +28,10 @@ griBulkDensityIndex = 2;
 logRange = [15998 17603];
 xrdClayRange = [4 10];
 xrdNonClayRange = [11 14];
-EcgrUrXaxisRange = [0 400];
+logEcgrUrXaxisRange = [0 400];
 logDepthRange = [2800 3100];
+logNphiXaxisRange = [-0.15 0.45];
+logRhobXaxisRange = [1.8 2.9];
 griXrdPlotRange = [2 3];
 
 XRD = xlsread(xrdFileName);
@@ -131,19 +134,19 @@ plot(x,y)
 figure; % start different figure
 
 logdepth = LOG(logRange(1,1):logRange(1,2),logDepthIndex);
-ECGR = LOG(logRange(1,1):logRange(1,2),logEcgrIndex);
+logECGR = LOG(logRange(1,1):logRange(1,2),logEcgrIndex);
 UR = LOG(logRange(1,1):logRange(1,2),logUranIndex);
 
 subplot (1,10,1) 	%GR
-plot(ECGR,logdepth,'c') %ECGR
+plot(logECGR,logdepth,'c') %ECGR
 axis ij
-xlim([EcgrUrXaxisRange(1,1) EcgrUrXaxisRange(1,2)]);
+xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
 xlabel('GR & UR')
 
 ax1 = gca;
 ax1_pos = get(ax1,'Position'); % position of first axes
-ax2 = axes('Position',ax1_pos,...
+ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) 0.9*ax1_pos(1,3) ax1_pos(1,4)],...
     'XAxisLocation','top',...
     'YAxisLocation','right',...
     'Color','none');
@@ -151,8 +154,9 @@ hold on
 plot(UR,logdepth,'Parent',ax2,'Color','r')%UR
 set(ax2,'XColor','r');
 set(ax2,'YColor','r');
+set(ax2,'YTick',[]);
 axis ij
-xlim([EcgrUrXaxisRange(1,1) EcgrUrXaxisRange(1,2)]);
+xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
 format long
 hold on 	
@@ -166,6 +170,7 @@ plot(c(:,3),c(:,1),'*r')  %XRDGrainDensityWithKerogen
 axis ij
 xlim([griXrdPlotRange(1,1) griXrdPlotRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
+set(gca,'YTick',[]);
 xlabel('grain den')
 format long 
 hold on
@@ -173,31 +178,36 @@ legend('GRI','XRD')
 %------------------------------------------------------------------------
 
 
-% subplot (1,10,3)%neutron poristy and bulk density 
+subplot (1,10,3)%neutron poristy and bulk density 
+logNphi = LOG(logRange(1,1):logRange(1,2),logNphiIndex);
+plot(logNphi,logdepth,'g')%neutron
+xlim([logNphiXaxisRange(1,1) logNphiXaxisRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+axis ij
+set(gca,'XDir','reverse')
+set(gca,'YTick',[]);
+xlabel('density and neutron')
+format long
 
-% plot(welllogs_new(j,3),welllogs_new(j,1),'g')%neutron
-% xlim([-0.15 0.45])
-% ylim([a b])
-% axis ij
-% set(gca,'XDir','reverse')
-% xlabel('density and neutron')
-% format long
+ax1 = gca;
+ax1_pos = get(ax1,'Position'); 
+ax2 = axes('Position',[1.03*ax1_pos(1,1) ax1_pos(1,2) 0.76*ax1_pos(1,3) ax1_pos(1,4)],...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'Color','none');
+hold on
+plot(logRhob,logdepth,'parent',ax2,'color','r')%density
+axis ij
+xlim([logRhobXaxisRange(1,1) logRhobXaxisRange(1,2)]);
+ylim([logDepthRange(1,1) logDepthRange(1,2)]);
+set(ax2,'XColor','r');
+set(ax2,'YColor','r');
+set(ax2,'YTick',[]);
+hold on 
+axis ij 
+legend('Nphi')
+%------------------------------------------------------------------------
 
-% ax1 = gca;
-% ax1_pos = ax1.Position;
-% ax2 = axes('Position',ax1_pos,...
-%     'XAxisLocation','top',...
-%     'YAxisLocation','right',...
-%     'Color','none');
-% hold on
-% plot(zRHOB(j),welllogs_new(j,1),'parent',ax2,'color','r')%density
-% axis ij
-% xlim([1.8 2.9])
-% ylim([a b])
-% hold on 
-% axis ij 
-% legend('Nphi')
-% %------------------------------------------------------------------------
 % %sonic and resis passeys:-
 % subplot (1,10,4)%sonic
 % plot(z_DTC(j),welllogs_new(j,1),'g')
@@ -223,7 +233,7 @@ legend('GRI','XRD')
 % hold on 
 % %------------------------------------------------------------------------
 
-% vsh=(ECGR-80)./(190-80);
+% vsh=(CGR-80)./(190-80);
 % subplot (1,10,5)%vshale
 % plot(vsh(j),welllogs_new(j,1))
 % xlabel('vsh')
