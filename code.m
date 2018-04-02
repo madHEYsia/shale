@@ -2,22 +2,22 @@ clear all;
 close all;
 clc;
 
+%FileNames  ---------------------------------------------------------------------------------------------------------------------------
 logFileName = 'log.xlsx';
 xrdFileName = 'xrd.xls';
 griFileName = 'gri.xlsx';
-
-%mineral densities  ------------------------------------------------------
+%mineral densities  -------------------------------------------------------------------------------------------------------------------
 qtz=2.65; kfeld=2.52; pfeld=2.66;              %silicates
 cal=2.71; dol=2.87;                              %carbonates
 pyr=4.99; marc=4.87;                             %heavies
 ill_smec=2.60; ill_mic=2.75; kaol=2.60; chl=2.94;  %clays
 densities=[qtz, kfeld, pfeld, cal, dol, pyr, marc, ill_smec, ill_mic, kaol,chl];
-%-------------------------------------------------------------------------  
+%Constants-----------------------------------------------------------------------------------------------------------------------------
 kerogen = 1.35;
 densitySand = 2.65;
 densityShale = 2.71;
 densityFluid = 1;
-
+%Indexes in files----------------------------------------------------------------------------------------------------------------------
 logDepthIndex = 1;
 logDreshIndex = 2;
 logDtcIndex = 3;
@@ -31,7 +31,7 @@ griDepthIndex = 2;
 griBulkDensityIndex = 3;
 griGrainDensityIndex = 7;
 griPorosityIndex = 8;
-
+%Plot ranges--------------------------------------------------------------------------------------------------------------------------
 logRange = [15998 17603];
 logEcgrUrXaxisRange = [0 400];
 logDepthRange = [2800 3100];
@@ -45,7 +45,7 @@ xrdClayRange = [11 14];
 xrdTocPasseyXaxisRange = [-1 10];
 griXrdPlotRange = [2 3];
 porosityWithoutKeroXaxisRange = [-0.5 1];
-
+%Parameter Constants------------------------------------------------------------------------------------------------------------------
 logSandLineHist = 80;
 logShaleLineHist = 190;
 clayFactor = 0.45;
@@ -55,26 +55,23 @@ levelOfMaturity = 12;
 scalingFactor1 = 70;
 scalingFactor2 = 0.75;
 
-
+%-------------------------------------------------------------------------------------------------------------------------------------
 LOG = xlsread(logFileName);
 XRD = xlsread(xrdFileName);
 GRI = xlsread(griFileName);
 
 logRhob = LOG(logRange(1,1):logRange(1,2),logRhobIndex);
-
 xrdToc = XRD(:,xrdTocIndex);
-xrdDepth = XRD(:,xrdDepthIndex);
-
-xrdNonClayWeightPercent = XRD(:,xrdNonClayRange(1,1):xrdNonClayRange(1,2));
-xrdClayWeightPercent = XRD(:,xrdClayRange(1,1):xrdClayRange(1,2));
-
-weightPercentCombine = cat(2,xrdNonClayWeightPercent, xrdClayWeightPercent);
-numberOfMinerals = size(weightPercentCombine,2);
-
 weightPercentKerogen = 1.1*xrdToc;
 weightPercentKerogenNormFactor = (1-weightPercentKerogen/100);
 
-%normalize by adding kerogen weight percentage to xrd mineral weight
+%-------------------------------------------------------------------------------------------------------------------------------------
+xrdDepth = XRD(:,xrdDepthIndex);
+xrdNonClayWeightPercent = XRD(:,xrdNonClayRange(1,1):xrdNonClayRange(1,2));
+xrdClayWeightPercent = XRD(:,xrdClayRange(1,1):xrdClayRange(1,2));
+weightPercentCombine = cat(2,xrdNonClayWeightPercent, xrdClayWeightPercent);
+numberOfMinerals = size(weightPercentCombine,2);
+
 weightPercentsNormalized = zeros(size(weightPercentCombine));
 weightByDensityNormalized = zeros(size(weightPercentCombine));
 XRDGrainDensityWithoutKerogen = zeros(size(xrdClayWeightPercent,1),1);
@@ -90,21 +87,20 @@ for i=1:size(weightPercentCombine,1)
     XRDGrainDensityWithoutKerogen(i,1) = 100/temp;
     XRDGrainDensityWithKerogen(i,1) = 100/(temp + weightPercentKerogen(i,1)/kerogen);
 end
-% -------------------------------------------------------------------------
+xrdNonClayNormSum = sum(weightPercentsNormalized(:,1:size(xrdNonClayWeightPercent,2)),2);
+xrdClayNormSum = sum(weightPercentsNormalized(:,(size(xrdNonClayWeightPercent,2)+1):size(weightPercentCombine,2)),2);
 
+%-------------------------------------------------------------------------------------------------------------------------------------
 griDepth = GRI(:,griDepthIndex);
 griGrainDensity = GRI(:,griGrainDensityIndex);
 griBulkDensity = GRI(:,griBulkDensityIndex);
 griPorosity = GRI(:,griPorosityIndex);
 
-%grain density xrd vs gri calibration at same depth data
 c=[];
-xrdNonClayNormSum = sum(weightPercentsNormalized(:,1:size(xrdNonClayWeightPercent,2)),2);
-xrdClayNormSum=sum(weightPercentsNormalized(:,(size(xrdNonClayWeightPercent,2)+1):size(weightPercentCombine,2)),2);
 cIndex = 0;
 for j= 1:length(GRI)       
     for  k= 1:length(XRD)
-        if griDepth(j,1)==xrdDepth(k,1)
+        if griDepth(j,1)==xrdDepth(k,1) %grain density xrd vs gri calibration at same depth data
         	cIndex = cIndex+1;
             c(cIndex,1) = griDepth(j,1);
             c(cIndex,2) = griGrainDensity(j,1);
@@ -121,6 +117,7 @@ for j= 1:length(GRI)
 end
 c(:,7) = c(:,6)/1.1;
 
+%-------------------------------------------------------------------------------------------------------------------------------------
 format long g
 hold on 
 plot (c(:,2),c(:,3),'o')
@@ -133,13 +130,16 @@ x=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
 y=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
 plot(x,y)
 
+%-------------------------------------------------------------------------------------------------------------------------------------
 figure; % start different figure
 
 logdepth = LOG(logRange(1,1):logRange(1,2),logDepthIndex);
 logECGR = LOG(logRange(1,1):logRange(1,2),logEcgrIndex);
 UR = LOG(logRange(1,1):logRange(1,2),logUranIndex);
 
+%-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,1) 	%GR
+
 plot(logECGR,logdepth,'c') %ECGR
 axis ij
 xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
@@ -163,7 +163,7 @@ ylim([logDepthRange(1,1) logDepthRange(1,2)]);
 format long
 hold on 	
 
-
+%-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,2)%grain density
 
 plot(c(:,2),c(:,1),'ok')
@@ -177,10 +177,10 @@ xlabel('grain den')
 format long 
 hold on
 legend('GRI','XRD')
-%------------------------------------------------------------------------
 
-
+%-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,3)%neutron poristy and bulk density 
+
 logNphi = LOG(logRange(1,1):logRange(1,2),logNphiIndex);
 plot(logNphi,logdepth,'g')%neutron
 xlim([logNphiXaxisRange(1,1) logNphiXaxisRange(1,2)])
@@ -208,10 +208,10 @@ set(ax2,'YTick',[]);
 hold on 
 axis ij 
 legend('RHOB')
-%------------------------------------------------------------------------
 
-%sonic and resis passeys:-
-subplot (1,10,4)%sonic
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot (1,10,4)%sonic and resis passeys
+
 logDtc = LOG(logRange(1,1):logRange(1,2),logDtcIndex);
 plot(logDtc, logdepth,'g')
 xlim([logDtcXaxisRange(1,1) logDtcXaxisRange(1,2)])
@@ -238,27 +238,20 @@ format long
 legend('sonic')
 xlabel('Sonic and resistivity')
 hold on 
-%------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot (1,10,5)%vshale
 
 logVshale = (logECGR-logSandLineHist)./(logShaleLineHist-logSandLineHist);
-subplot (1,10,5)%vshale
 plot(logVshale,logdepth)
 xlabel('Vsh Vcl XrdTcl')
 xlim([logVshaleXaxisRange(1,1) logVshaleXaxisRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
 set(gca,'YTick',[]);
 axis ij
-hold on 
-
 logVclay = clayFactor.*logVshale;
-plot(logVclay,logdepth,'r')
 hold on 
-
-% nclays_common=c(:,4);
-% heavies_sum=sum(c(:,28:29),2);
-% crystals_sum=sum(c(:,23:27),2);
-% clays_sum=c(:,5);
-
+plot(logVclay,logdepth,'r')
 for i=1:1:length(c)
     mineralVolumePercentage(i,:)= c(i,8)*c(i, 9:8+numberOfMinerals);
 end
@@ -267,16 +260,15 @@ nonClayVolumePercentageSum = sum(nonClayVolumePercentage,2);
 clayVolumePercentage = mineralVolumePercentage(:,(size(xrdNonClayWeightPercent,2)+1):size(mineralVolumePercentage,2));
 clayVolumePercentageSum = sum(clayVolumePercentage,2);
 clayVolumeSum = clayVolumePercentageSum/100;
-
+hold on 
 plot(clayVolumeSum, c(:,1),'ok')
 legend('Vsh','Vcl','XRDclay')
 
-%------------------------------------------------------------------------
-%Passeys TOC
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot (1,10,6)%TOC passeys and XRD;
+
 deltaLogR = log(logDresh./dReshBaseHist)+0.02.*(logDtc - dtcBaseHist);
 tocPassey = scalingFactor1.*deltaLogR.*10.^(0.297-0.1688.*levelOfMaturity)+scalingFactor2;
-
-subplot (1,10,6)%TOC passeys and XRD;
 plot(tocPassey, logdepth,'r')
 xlim([xrdTocPasseyXaxisRange(1,1) xrdTocPasseyXaxisRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
@@ -288,9 +280,9 @@ hold on
 xlabel('TOC')
 legend('TOC_Passey','TOC_XRD')
 
-%------------------------------------------------------------------------
-
+%-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,7)%bulk density
+
 plot(logRhob,logdepth,'k')
 xlabel('bulk density')
 xlim([logRhobXaxisRange(1,1) logRhobXaxisRange(1,2)]);
@@ -302,8 +294,9 @@ plot(c(:,8),c(:,1),'og')
 format long
 legend('Log blkd','GRI')
 
-%------------------------------------------------------------------------
+%-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,8)%porosity
+
 porosityWithoutKerogen = (logRhob-(densityShale.*logVshale+densitySand.*(1-logVshale)))./(densityFluid-(densityShale.*logVshale+densitySand.*(1-logVshale)));
 plot(porosityWithoutKerogen, logdepth,'k')
 xlabel('porosityWithoutKerogen')
@@ -317,12 +310,9 @@ set(gca,'YTick',[]);
 format long
 legend('porosityWithoutKerogen','GRI')
 
-
-%------------------------------------------------------------------------
-
-
-% a=1;m=2;
+%-------------------------------------------------------------------------------------------------------------------------------------
 % subplot (1,10,9)%saturation from logs and core (gri)
+% a=1;m=2;
 % %{
 % Sw=(a.*Rw./(porosityWithoutKerogen.^m.*DRESHOHMM)).^0.5;
 
@@ -343,8 +333,13 @@ legend('porosityWithoutKerogen','GRI')
 % format long
 % hold on 
 
-% %------------------------------------------------------------------------
+% %-------------------------------------------------------------------------------------------------------------------------------------
 %  %display clay non clays and kerogen
+
+% nclays_common=c(:,4);
+% heavies_sum=sum(c(:,28:29),2);
+% crystals_sum=sum(c(:,23:27),2);
+% clays_sum=c(:,5);
 
     
 % subplot (1,10,10)
@@ -359,6 +354,6 @@ legend('porosityWithoutKerogen','GRI')
 % ylim([2800 3100])
 % legend('NClay','Clay','Kerogen')
 
-% %------------------------------------------------------------------------
+% %-------------------------------------------------------------------------------------------------------------------------------------
 % %rhog_Vsh=rho_sh.*logVshale(j)+rho_sand.*(1-logVshale(j));
 % %plot(rhog_Vsh,)
