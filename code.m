@@ -129,9 +129,9 @@ plot(x,y)
 
 figure; % start different figure
 
-logdepth = LOG(logRange,logDepthIndex);
-CGR = LOG(logRange,logCgrIndex);
-UR = LOG(logRange,logUranIndex);
+logdepth = LOG(logRange(1,1):logRange(1,2),logDepthIndex);
+CGR = LOG(logRange(1,1):logRange(1,2),logCgrIndex);
+UR = LOG(logRange(1,1):logRange(1,2),logUranIndex);
 
 subplot (1,10,1) 	%GR
 plot(CGR,logdepth,'c') %ECGR
