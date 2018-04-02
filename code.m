@@ -2,18 +2,21 @@ clear all;
 close all;
 clc;
 
+logFileName = 'log.xlsx';
+xrdFileName = 'xrd.xls';
+griFileName = 'gri.xlsx';
+
 %mineral densities  ------------------------------------------------------
 qtz=2.65; kfeld=2.52; pfeld=2.66;              %silicates
 cal=2.71; dol=2.87;                              %carbonates
 pyr=4.99; marc=4.87;                             %heavies
 ill_smec=2.60; ill_mic=2.75; kaol=2.60; chl=2.94;  %clays
 densities=[qtz, kfeld, pfeld, cal, dol, pyr, marc, ill_smec, ill_mic, kaol,chl];
+%-------------------------------------------------------------------------  
 kerogen = 1.35;
-%-------------------------------------------------------------------------	
-
-logFileName = 'log.xlsx';
-xrdFileName = 'xrd.xls';
-griFileName = 'gri.xlsx';
+densitySand = 2.65;
+densityShale = 2.71;
+densityFluid = 1;
 
 logDepthIndex = 1;
 logDreshIndex = 2;
@@ -27,6 +30,8 @@ xrdDepthIndex = 1;
 griDepthIndex = 2;
 griBulkDensityIndex = 3;
 griGrainDensityIndex = 7;
+griPorosityIndex = 8;
+
 logRange = [15998 17603];
 logEcgrUrXaxisRange = [0 400];
 logDepthRange = [2800 3100];
@@ -39,6 +44,7 @@ xrdNonClayRange = [4 10];
 xrdClayRange = [11 14];
 xrdTocPasseyXaxisRange = [-1 10];
 griXrdPlotRange = [2 3];
+porosityWithoutKeroXaxisRange = [-0.5 1];
 
 logSandLineHist = 80;
 logShaleLineHist = 190;
@@ -48,6 +54,7 @@ dtcBaseHist = 60;
 levelOfMaturity = 12;
 scalingFactor1 = 70;
 scalingFactor2 = 0.75;
+
 
 LOG = xlsread(logFileName);
 XRD = xlsread(xrdFileName);
@@ -88,6 +95,7 @@ end
 griDepth = GRI(:,griDepthIndex);
 griGrainDensity = GRI(:,griGrainDensityIndex);
 griBulkDensity = GRI(:,griBulkDensityIndex);
+griPorosity = GRI(:,griPorosityIndex);
 
 %grain density xrd vs gri calibration at same depth data
 c=[];
@@ -107,6 +115,7 @@ for j= 1:length(GRI)
             c(cIndex,8) = griBulkDensity(j,1);
             c(cIndex,9:8+numberOfMinerals) = weightByDensityNormalized(k,:);
             c(cIndex,9+numberOfMinerals) = XRDGrainDensityWithoutKerogen(k,1);  
+            c(cIndex,9+numberOfMinerals+1) = griPorosity(j,1);;  
         end
     end 
 end
@@ -273,36 +282,51 @@ xlim([xrdTocPasseyXaxisRange(1,1) xrdTocPasseyXaxisRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
 hold on 
 plot(c(:,7),c(:,1),'ok')
-% xlim([-1 10])
-% ylim([logDepthRange(1,1) logDepthRange(1,2)])
+set(gca,'YTick',[]);
 axis ij 
 hold on 
 xlabel('TOC')
 legend('TOC_Passey','TOC_XRD')
 
-% %------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
-% subplot (1,10,8)%bulk density
-% plot(zRHOB(j,1),welllogs_new(j,1),'k')
-% xlabel('bulk density')
-% xlim([2 3])
-% ylim([a b])
-% axis ij
-% hold on  
-% plot(c(:,8),c(:,1),'og')
-% xlim([2 3])
-% ylim([a b])
-% axis ij
-% format long
-% legend('Log blkd','GRI')
-% %------------------------------------------------------------------------
+subplot (1,10,7)%bulk density
+plot(logRhob,logdepth,'k')
+xlabel('bulk density')
+xlim([logRhobXaxisRange(1,1) logRhobXaxisRange(1,2)]);
+ylim([logDepthRange(1,1) logDepthRange(1,2)]);
+set(gca,'YTick',[]);
+axis ij
+hold on  
+plot(c(:,8),c(:,1),'og')
+format long
+legend('Log blkd','GRI')
+
+%------------------------------------------------------------------------
+subplot (1,10,8)%porosity
+porosityWithoutKerogen = (logRhob-(densityShale.*logVshale+densitySand.*(1-logVshale)))./(densityFluid-(densityShale.*logVshale+densitySand.*(1-logVshale)));
+plot(porosityWithoutKerogen, logdepth,'k')
+xlabel('porosityWithoutKerogen')
+xlim([porosityWithoutKeroXaxisRange(1,1) porosityWithoutKeroXaxisRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+axis ij
+format long
+hold on
+plot(c(:,9+numberOfMinerals+1),c(:,1),'og')
+format long
+legend('porosityWithoutKerogen','GRI')
+
+
+%------------------------------------------------------------------------
+
+
 % a=1;m=2;
 % subplot (1,10,9)%saturation from logs and core (gri)
 % %{
-% Sw=(a.*Rw./(phi.^m.*DRESHOHMM)).^0.5;
+% Sw=(a.*Rw./(porosityWithoutKerogen.^m.*DRESHOHMM)).^0.5;
 
 
-% plot(Sw(j,1),welllogs_new(j,1),'k')
+% plot(Sw(j,1),logdepth,'k')
 
 % xlim([0 1])
 % ylim([a b])
