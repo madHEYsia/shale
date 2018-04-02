@@ -313,6 +313,7 @@ axis ij
 format long
 hold on
 plot(c(:,9+numberOfMinerals+1),c(:,1),'og')
+set(gca,'YTick',[]);
 format long
 legend('porosityWithoutKerogen','GRI')
 
