@@ -103,6 +103,7 @@ griBulkDensity = GRI(:,griBulkDensityIndex);
 griPorosity = GRI(:,griPorosityIndex);
 
 c=[];
+griXrdCommonWeightPercentage = [];
 cIndex = 0;
 for j= 1:length(GRI)       
     for  k= 1:length(XRD)
@@ -117,7 +118,8 @@ for j= 1:length(GRI)
             c(cIndex,8) = griBulkDensity(j,1);
             c(cIndex,9:8+numberOfMinerals) = weightByDensityNormalized(k,:);
             c(cIndex,9+numberOfMinerals) = XRDGrainDensityWithoutKerogen(k,1);  
-            c(cIndex,9+numberOfMinerals+1) = griPorosity(j,1);;  
+            c(cIndex,9+numberOfMinerals+1) = griPorosity(j,1);
+            griXrdCommonWeightPercentage(cIndex,:) = weightPercentsNormalized(k,:);
         end
     end 
 end
@@ -340,23 +342,23 @@ hold on
 % %-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,10) %display clay non clays and kerogen
 
-weightInGroups = zeros(length(weightPercentsNormalized),4);
-for i=1:1:length(weightPercentsNormalized)
+weightInGroups = zeros(length(griXrdCommonWeightPercentage),4);
+for i=1:1:length(griXrdCommonWeightPercentage)
     for j=1:1:length(silicateIndex)
-        weightInGroups(i,1) = weightInGroups(i,1) + weightPercentsNormalized(i, silicateIndex(1,j));
+        weightInGroups(i,1) = weightInGroups(i,1) + griXrdCommonWeightPercentage(i, silicateIndex(1,j));
     end
     for j=1:1:length(carbonateIndex)
-        weightInGroups(i,2) = weightInGroups(i,2) + weightPercentsNormalized(i, carbonateIndex(1,j));
+        weightInGroups(i,2) = weightInGroups(i,2) + griXrdCommonWeightPercentage(i, carbonateIndex(1,j));
     end
     for j=1:1:length(clayIndex)
-        weightInGroups(i,3) = weightInGroups(i,3) + weightPercentsNormalized(i,clayIndex(1,j));
+        weightInGroups(i,3) = weightInGroups(i,3) + griXrdCommonWeightPercentage(i,clayIndex(1,j));
     end
     for j=1:1:length(heaviesIndex)
-        weightInGroups(i,4) = weightInGroups(i,4) + weightPercentsNormalized(i,heaviesIndex(1,j));
+        weightInGroups(i,4) = weightInGroups(i,4) + griXrdCommonWeightPercentage(i,heaviesIndex(1,j));
     end
 end
 
-area(xrdDepth ,weightInGroups);
+area(c(:,1), weightInGroups);
 axis([logDepthRange(1,1) logDepthRange(1,2) 0 100])
 view(90,90)
 set(gca,'XTick',[]);
