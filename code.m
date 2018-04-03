@@ -31,6 +31,11 @@ griDepthIndex = 2;
 griBulkDensityIndex = 3;
 griGrainDensityIndex = 7;
 griPorosityIndex = 8;
+%NonClay Indexes----------------------------------------------------------------------------------------------------------------------
+silicateIndex = [1 2 3];
+carbonateIndex = [4 5];
+heaviesIndex = [6 7];
+clayIndex = [8 9 10 11];
 %Plot ranges--------------------------------------------------------------------------------------------------------------------------
 logRange = [15998 17603];
 logEcgrUrXaxisRange = [0 400];
@@ -45,6 +50,7 @@ xrdClayRange = [11 14];
 xrdTocPasseyXaxisRange = [-1 10];
 griXrdPlotRange = [2 3];
 porosityWithoutKeroXaxisRange = [-0.5 1];
+saturationRange = [0 1];
 %Parameter Constants------------------------------------------------------------------------------------------------------------------
 logSandLineHist = 80;
 logShaleLineHist = 190;
@@ -311,7 +317,8 @@ format long
 legend('porosityWithoutKerogen','GRI')
 
 %-------------------------------------------------------------------------------------------------------------------------------------
-% subplot (1,10,9)%saturation from logs and core (gri)
+subplot (1,10,9) %saturation from logs and core (gri)
+
 % a=1;m=2;
 % %{
 % Sw=(a.*Rw./(porosityWithoutKerogen.^m.*DRESHOHMM)).^0.5;
@@ -319,40 +326,40 @@ legend('porosityWithoutKerogen','GRI')
 
 % plot(Sw(j,1),logdepth,'k')
 
-% xlim([0 1])
-% ylim([a b])
-% axis ij
 % hold on  
-% %}
-
 % plot(SW_gri,DEPTH_gri,'ok')
-% xlim([0 1])
-% ylim([2800 3100])
-% axis ij
-% xlabel('saturation')
-% format long
-% hold on 
+
+xlim([saturationRange(1,1) saturationRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+xlabel('Saturation')
+set(gca,'YTick',[]);
+axis ij
+format long
+hold on 
 
 % %-------------------------------------------------------------------------------------------------------------------------------------
-%  %display clay non clays and kerogen
+subplot (1,10,10) %display clay non clays and kerogen
 
-% nclays_common=c(:,4);
-% heavies_sum=sum(c(:,28:29),2);
-% crystals_sum=sum(c(:,23:27),2);
-% clays_sum=c(:,5);
+weightInGroups = zeros(length(weightPercentsNormalized),4);
+for i=1:1:length(weightPercentsNormalized)
+    for j=1:1:length(silicateIndex)
+        weightInGroups(i,1) = weightInGroups(i,1) + weightPercentsNormalized(i, silicateIndex(1,j));
+    end
+    for j=1:1:length(carbonateIndex)
+        weightInGroups(i,2) = weightInGroups(i,2) + weightPercentsNormalized(i, carbonateIndex(1,j));
+    end
+    for j=1:1:length(clayIndex)
+        weightInGroups(i,3) = weightInGroups(i,3) + weightPercentsNormalized(i,clayIndex(1,j));
+    end
+    for j=1:1:length(heaviesIndex)
+        weightInGroups(i,4) = weightInGroups(i,4) + weightPercentsNormalized(i,heaviesIndex(1,j));
+    end
+end
 
-    
-% subplot (1,10,10)
-% plot(nclay1,d1,'y')
-% hold on 
-% plot(clay1,d1,'k')
-% hold on 
-% plot(kerogen1,d1,'r')
-% hold on 
-% axis ij 
-% xlim([0 100])
-% ylim([2800 3100])
-% legend('NClay','Clay','Kerogen')
+area(xrdDepth ,weightInGroups);
+axis([logDepthRange(1,1) logDepthRange(1,2) 0 100])
+view(90,90)
+set(gca,'XTick',[]);
 
 % %-------------------------------------------------------------------------------------------------------------------------------------
 % %rhog_Vsh=rho_sh.*logVshale(j)+rho_sand.*(1-logVshale(j));
