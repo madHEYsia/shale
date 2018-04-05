@@ -6,8 +6,6 @@ clc;
 logFileName = 'log.xlsx';
 xrdFileName = 'xrd.xls';
 griFileName = 'gri.xlsx';
-sraFileName = 'sra.xls';
-
 %mineral densities  -------------------------------------------------------------------------------------------------------------------
 qtz=2.65; kfeld=2.52; pfeld=2.66;              %silicates
 cal=2.71; dol=2.87;                              %carbonates
@@ -33,10 +31,6 @@ griDepthIndex = 2;
 griBulkDensityIndex = 3;
 griGrainDensityIndex = 7;
 griPorosityIndex = 8;
-sraDepthIndex=1;
-sraTmaxIndex=6;
-sraHIIndex=8;
-sraOIIndex=9;
 %NonClay Indexes----------------------------------------------------------------------------------------------------------------------
 silicateIndex = [1 2 3];
 carbonateIndex = [4 5];
@@ -71,7 +65,6 @@ scalingFactor2 = 0.75;
 LOG = xlsread(logFileName);
 XRD = xlsread(xrdFileName);
 GRI = xlsread(griFileName);
-SRA = xlsread(sraFileName);
 
 logRhob = LOG(logRange(1,1):logRange(1,2),logRhobIndex);
 xrdToc = XRD(:,xrdTocIndex);
@@ -371,14 +364,5 @@ view(90,90)
 set(gca,'XTick',[]);
 
 % %-------------------------------------------------------------------------------------------------------------------------------------
-plot (sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2),sum(griXrdCommonWeightPercentage(:,clayIndex),2),'o');
-
-plot(xrdNonClayWeightPercent(:,heaviesIndex(1,1)),(XRDGrainDensityWithoutKerogen),'o');%heavies vs clays plotted
-
-
-depthSra=sra(:,sraDepthIndex);
-TmaxSra=sra(:,sraTmaxIndex);
-HISra=sra(:,sraHIIndex);
-OISra=sra(:,sraOIIndex);
-figure
-plot(TmaxSra,HISra,'o');
+% %rhog_Vsh=rho_sh.*logVshale(j)+rho_sand.*(1-logVshale(j));
+% %plot(rhog_Vsh,)
