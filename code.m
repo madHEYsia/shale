@@ -368,10 +368,10 @@ end
 h=area(c(:,1), weightInGroups);
 axis([logDepthRange(1,1) logDepthRange(1,2) 0 100])
 view(90,90)
-h(1).FaceColor = [1 1 0];
-h(2).FaceColor = [0.2 0.4 1];
-h(3).FaceColor = [0.6 0.8 0.6];
-h(4).FaceColor = [1 0 0];
+set(h(1),'FaceColor',[1 1 0]);
+set(h(2),'FaceColor',[0.2 0.4 1]);
+set(h(3),'FaceColor',[0.6 0.8 0.6]);
+set(h(4),'FaceColor',[1 0 0]);
 set(gca,'XTick',[]);
 
 % %-------------------------------------------------------------------------------------------------------------------------------------
