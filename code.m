@@ -190,7 +190,7 @@ ylim([logDepthRange(1,1) logDepthRange(1,2)])
 axis ij
 set(gca,'XDir','reverse')
 set(gca,'YTick',[]);
-xlabel('density and neutron')
+xlabel('density & neutron')
 format long
 
 axRhob = gca;
@@ -301,7 +301,7 @@ subplot (1,10,8)%porosity
 
 porosityWithoutKerogen = (logRhob-(densityShale.*logVshale+densitySand.*(1-logVshale)))./(densityFluid-(densityShale.*logVshale+densitySand.*(1-logVshale)));
 plot(porosityWithoutKerogen, logdepth,'k')
-xlabel('porosityWithoutKerogen')
+xlabel('phi-w/o-K')
 xlim([porosityWithoutKeroXaxisRange(1,1) porosityWithoutKeroXaxisRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
 axis ij
@@ -310,20 +310,10 @@ hold on
 plot(c(:,9+numberOfMinerals+1),c(:,1),'og')
 set(gca,'YTick',[]);
 format long
-legend('porosityWithoutKerogen','GRI')
+legend('phi-w/o-K','GRI')
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,9) %saturation from logs and core (gri)
-
-% a=1;m=2;
-% %{
-% Sw=(a.*Rw./(porosityWithoutKerogen.^m.*DRESHOHMM)).^0.5;
-
-
-% plot(Sw(j,1),logdepth,'k')
-
-% hold on  
-% plot(SW_gri,DEPTH_gri,'ok')
 
 xlim([saturationRange(1,1) saturationRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
@@ -360,7 +350,12 @@ set(h(2),'FaceColor',[0.2 0.4 1]);
 set(h(3),'FaceColor',[0.6 0.8 0.6]);
 set(h(4),'FaceColor',[1 0 0]);
 set(gca,'XTick',[]);
-
+[~,h_legend] = legend('Silicates','Carbonates','Clay','Heavies');
+PatchInLegend = findobj(h_legend, 'type', 'patch');
+set(PatchInLegend(1), 'FaceAlpha', 0.2);
+set(PatchInLegend(2), 'FaceAlpha', 0.4);
+set(PatchInLegend(3), 'FaceAlpha', 0.2);
+set(PatchInLegend(4), 'FaceAlpha', 0.4);   
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure
 
@@ -395,7 +390,6 @@ plot(griXrdCommonSilicatesCarbonates,func_1,'--r')
 str = strcat('y =  ',num2str(polyfitClaySilicateCarbonate(1)),'*x + ',num2str(polyfitClaySilicateCarbonate(2)));
 title(str);
 hold off
-% sumgriXrdClays =-8.056.*griXrdCommonSilicatesCarbonates+42.18;% after curve fitting;
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,3)
@@ -433,6 +427,7 @@ subplot (1,10,6)
 hold on
 tocRohb = polyfitblkdXrdToc(1).*logRhob + polyfitblkdXrdToc(2);
 plot(tocRohb, logdepth, 'b') %toc RHOB
+legend('TOC_Passey','TOC_XRD','TOC_RHOB')
 format long
 
 figure
@@ -447,6 +442,7 @@ plot(tocRohb, logdepth, 'b') %toc RHOB
 legend('TOC_Passey','TOC_XRD','TOC_RHOB')
 
 figure(2)
+
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,5)
 
@@ -460,20 +456,3 @@ subplot(2,3,5)
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,6)
-
-% logRhob
-% subplot(2,3,1)
-% format long g
-% hold on 
-% plot (c(:,2),c(:,3),'o')
-% xlim(griXrdPlotRange);
-% ylim(griXrdPlotRange);
-% xlabel('griGrainDensity')
-% ylabel('XRDGrainDensityWithKerogen')
-
-% hold on 
-% %y=x line
-% x=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
-% y=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
-% plot(x,y)
-% title('y = x ');
