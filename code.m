@@ -193,8 +193,8 @@ set(gca,'YTick',[]);
 xlabel('density and neutron')
 format long
 
-ax1 = gca;
-ax1_pos = get(ax1,'Position'); 
+axRhob = gca;
+ax1_pos = get(axRhob,'Position'); 
 ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) 0.94*ax1_pos(1,3) ax1_pos(1,4)],...
     'XAxisLocation','top',...
     'YAxisLocation','right',...
@@ -408,7 +408,6 @@ polyfitheaviesGrainDensity = polyfit(sumHeavies,c(:,9+numberOfMinerals), 1);
 func_2 = polyval(polyfitheaviesGrainDensity,sumHeavies);
 hold on
 plot(sumHeavies,func_2,'--r')
-dim = [0.2 0.5 0.3 0.3];
 str = strcat('y =  ',num2str(polyfitheaviesGrainDensity(1)),'*x + ',num2str(polyfitheaviesGrainDensity(2)));
 title(str);
 hold off
@@ -418,24 +417,63 @@ subplot(2,3,4)
 
 blkdXrdCommonNorm = c(:,8);
 tocCommonNorm = c(:,6)./1.1;
-plot (tocCommonNorm, blkdXrdCommonNorm, 'o') ;
-xlabel('tocCommonNorm')
-ylabel('blkdXrdCommonNorm')
-polyfitblkdXrdToc = polyfit(tocCommonNorm, blkdXrdCommonNorm, 1);
-func_3 = polyval(polyfitblkdXrdToc,tocCommonNorm);
+plot (blkdXrdCommonNorm, tocCommonNorm,'o') ;
+xlabel('blkdXrdCommonNorm')
+ylabel('tocCommonNorm')
+polyfitblkdXrdToc = polyfit(blkdXrdCommonNorm,tocCommonNorm, 1);
+func_3 = polyval(polyfitblkdXrdToc,blkdXrdCommonNorm);
 hold on
-plot(tocCommonNorm,func_3,'--r')
-dim = [0.2 0.5 0.3 0.3];
+plot(blkdXrdCommonNorm,func_3,'--r')
 str = strcat('y =  ',num2str(polyfitblkdXrdToc(1)),'*x + ',num2str(polyfitblkdXrdToc(2)));
 title(str);
 hold off
 
+figure(1)
+subplot (1,10,6)
+hold on
+tocRohb = polyfitblkdXrdToc(1).*logRhob + polyfitblkdXrdToc(2);
+plot(tocRohb, logdepth, 'b') %toc RHOB
+format long
+
+figure
+plot(tocPassey, logdepth,'r')
+xlim([xrdTocPasseyXaxisRange(1,1) xrdTocPasseyXaxisRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+hold on 
+plot(c(:,7),c(:,1),'ok')
+axis ij 
+hold on 
+plot(tocRohb, logdepth, 'b') %toc RHOB
+legend('TOC_Passey','TOC_XRD','TOC_RHOB')
+
+figure(2)
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot(2,3,5)
 
 % depthSra=SRA(:,sraDepthIndex);
 % TmaxSra=SRA(:,sraTmaxIndex);
 % HISra=SRA(:,sraHIIndex);
 % OISra=SRA(:,sraOIIndex);
-% figure
 % plot(TmaxSra,HISra,'o');
 % plot(OISra,HISra,'o');
 % axis([0 400 0 800])
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot(2,3,6)
+
+% logRhob
+% subplot(2,3,1)
+% format long g
+% hold on 
+% plot (c(:,2),c(:,3),'o')
+% xlim(griXrdPlotRange);
+% ylim(griXrdPlotRange);
+% xlabel('griGrainDensity')
+% ylabel('XRDGrainDensityWithKerogen')
+
+% hold on 
+% %y=x line
+% x=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
+% y=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
+% plot(x,y)
+% title('y = x ');
