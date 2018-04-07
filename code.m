@@ -133,19 +133,6 @@ end
 c(:,7) = c(:,6)/1.1;
 
 %-------------------------------------------------------------------------------------------------------------------------------------
-format long g
-hold on 
-plot (c(:,2),c(:,3),'o')
-xlim(griXrdPlotRange);
-ylim(griXrdPlotRange);
-
-hold on 
-%y=x line
-x=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
-y=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
-plot(x,y)
-
-%-------------------------------------------------------------------------------------------------------------------------------------
 figure; % start different figure
 
 logdepth = LOG(logRange(1,1):logRange(1,2),logDepthIndex);
@@ -374,30 +361,81 @@ set(h(3),'FaceColor',[0.6 0.8 0.6]);
 set(h(4),'FaceColor',[1 0 0]);
 set(gca,'XTick',[]);
 
-% %-------------------------------------------------------------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------------------------------------------------------------
 figure
 
-sumgriXrdSilicatesplusCarbonates=sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2);
-sumgriXrdClays=sum(griXrdCommonWeightPercentage(:,clayIndex),2);
-plot (sumgriXrdSilicatesplusCarbonates,sumgriXrdClays,'o');
-sumgriXrdClays=-8.056.*sumgriXrdSilicatesplusCarbonates+42.18;% aftre curve fitting;
+subplot(2,3,1)
+format long g
+hold on 
+plot (c(:,2),c(:,3),'o')
+xlim(griXrdPlotRange);
+ylim(griXrdPlotRange);
+xlabel('griGrainDensity')
+ylabel('XRDGrainDensityWithKerogen')
+
+hold on 
+%y=x line
+x=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
+y=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
+plot(x,y)
+title('y = x ');
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot(2,3,2)
+
+griXrdCommonSilicatesCarbonates = sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2);
+sumgriXrdClays = sum(griXrdCommonWeightPercentage(:,clayIndex),2);
+plot (griXrdCommonSilicatesCarbonates, sumgriXrdClays, 'o');
+xlabel('griXrdCommonSilicatesCarbonates')
+ylabel('sumgriXrdClays')
+polyfitClaySilicateCarbonate = polyfit(griXrdCommonSilicatesCarbonates, sumgriXrdClays, 1);
+func_1 = polyval(polyfitClaySilicateCarbonate,griXrdCommonSilicatesCarbonates);
+hold on
+plot(griXrdCommonSilicatesCarbonates,func_1,'--r')
+str = strcat('y =  ',num2str(polyfitClaySilicateCarbonate(1)),'*x + ',num2str(polyfitClaySilicateCarbonate(2)));
+title(str);
+hold off
+% sumgriXrdClays =-8.056.*griXrdCommonSilicatesCarbonates+42.18;% after curve fitting;
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot(2,3,3)
+
+sumHeavies = sum(griXrdCommonWeightPercentage(:,heaviesIndex),2);
+plot(sumHeavies,c(:,9+numberOfMinerals),'o');  %heavies vs grain density plotted
+xlabel('sumHeavies')
+ylabel('XRDGrainDensityWithoutKerogen')
+polyfitheaviesGrainDensity = polyfit(sumHeavies,c(:,9+numberOfMinerals), 1);
+func_2 = polyval(polyfitheaviesGrainDensity,sumHeavies);
+hold on
+plot(sumHeavies,func_2,'--r')
+dim = [0.2 0.5 0.3 0.3];
+str = strcat('y =  ',num2str(polyfitheaviesGrainDensity(1)),'*x + ',num2str(polyfitheaviesGrainDensity(2)));
+title(str);
+hold off
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+subplot(2,3,4)
+
+blkdXrdCommonNorm = c(:,8);
+tocCommonNorm = c(:,6)./1.1;
+plot (tocCommonNorm, blkdXrdCommonNorm, 'o') ;
+xlabel('tocCommonNorm')
+ylabel('blkdXrdCommonNorm')
+polyfitblkdXrdToc = polyfit(tocCommonNorm, blkdXrdCommonNorm, 1);
+func_3 = polyval(polyfitblkdXrdToc,tocCommonNorm);
+hold on
+plot(tocCommonNorm,func_3,'--r')
+dim = [0.2 0.5 0.3 0.3];
+str = strcat('y =  ',num2str(polyfitblkdXrdToc(1)),'*x + ',num2str(polyfitblkdXrdToc(2)));
+title(str);
+hold off
 
 
-
-sumHeavies=sum(xrdNonClayWeightPercent(:,heaviesIndex),2);
-plot(sumHeavies,(XRDGrainDensityWithoutKerogen),'o');%heavies vs clays plotted
-
-
-plot (c(:,6),c(:,8),'o') ;
-blkdxrdcommonnorm=c(:,8);
-kerogencommonnorm=c(:,6);
-
-
-depthSra=SRA(:,sraDepthIndex);
-TmaxSra=SRA(:,sraTmaxIndex);
-HISra=SRA(:,sraHIIndex);
-OISra=SRA(:,sraOIIndex);
-figure
-plot(TmaxSra,HISra,'o');
-plot(OISra,HISra,'o');
-axis([0 400 0 800])
+% depthSra=SRA(:,sraDepthIndex);
+% TmaxSra=SRA(:,sraTmaxIndex);
+% HISra=SRA(:,sraHIIndex);
+% OISra=SRA(:,sraOIIndex);
+% figure
+% plot(TmaxSra,HISra,'o');
+% plot(OISra,HISra,'o');
+% axis([0 400 0 800])
