@@ -365,20 +365,39 @@ for i=1:1:length(griXrdCommonWeightPercentage)
     end
 end
 
-area(c(:,1), weightInGroups);
+h=area(c(:,1), weightInGroups);
 axis([logDepthRange(1,1) logDepthRange(1,2) 0 100])
 view(90,90)
+h(1).FaceColor = [1 1 0];
+h(2).FaceColor = [0.2 0.4 1];
+h(3).FaceColor = [0.6 0.8 0.6];
+h(4).FaceColor = [1 0 0];
 set(gca,'XTick',[]);
 
 % %-------------------------------------------------------------------------------------------------------------------------------------
-plot (sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2),sum(griXrdCommonWeightPercentage(:,clayIndex),2),'o');
+figure
 
-plot(xrdNonClayWeightPercent(:,heaviesIndex(1,1)),(XRDGrainDensityWithoutKerogen),'o');%heavies vs clays plotted
+sumgriXrdSilicatesplusCarbonates=sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2);
+sumgriXrdClays=sum(griXrdCommonWeightPercentage(:,clayIndex),2);
+plot (sumgriXrdSilicatesplusCarbonates,sumgriXrdClays,'o');
+sumgriXrdClays=-8.056.*sumgriXrdSilicatesplusCarbonates+42.18;% aftre curve fitting;
 
 
-depthSra=sra(:,sraDepthIndex);
-TmaxSra=sra(:,sraTmaxIndex);
-HISra=sra(:,sraHIIndex);
-OISra=sra(:,sraOIIndex);
+
+sumHeavies=sum(xrdNonClayWeightPercent(:,heaviesIndex),2);
+plot(sumHeavies,(XRDGrainDensityWithoutKerogen),'o');%heavies vs clays plotted
+
+
+plot (c(:,6),c(:,8),'o') ;
+blkdxrdcommonnorm=c(:,8);
+kerogencommonnorm=c(:,6);
+
+
+depthSra=SRA(:,sraDepthIndex);
+TmaxSra=SRA(:,sraTmaxIndex);
+HISra=SRA(:,sraHIIndex);
+OISra=SRA(:,sraOIIndex);
 figure
 plot(TmaxSra,HISra,'o');
+plot(OISra,HISra,'o');
+axis([0 400 0 800])
