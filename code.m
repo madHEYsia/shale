@@ -15,7 +15,7 @@ pyr=4.99; marc=4.87;                             %heavies
 ill_smec=2.60; ill_mic=2.75; kaol=2.60; chl=2.94;  %clays
 densities=[qtz, kfeld, pfeld, cal, dol, pyr, marc, ill_smec, ill_mic, kaol,chl];
 %Constants-----------------------------------------------------------------------------------------------------------------------------
-kerogen = 1.35;
+densityKerogen = 1.35;
 densitySand = 2.65;
 densityShale = 2.71;
 densityFluid = 1;
@@ -100,7 +100,7 @@ for i=1:size(weightPercentCombine,1)
    		temp = temp + weightByDensityNormalized(i,j);
     end
     XRDGrainDensityWithoutKerogen(i,1) = 100/temp;
-    XRDGrainDensityWithKerogen(i,1) = 100/(temp + weightPercentKerogen(i,1)/kerogen);
+    XRDGrainDensityWithKerogen(i,1) = 100/(temp + weightPercentKerogen(i,1)/densityKerogen);
 end
 xrdNonClayNormSum = sum(weightPercentsNormalized(:,1:size(xrdNonClayWeightPercent,2)),2);
 xrdClayNormSum = sum(weightPercentsNormalized(:,(size(xrdNonClayWeightPercent,2)+1):size(weightPercentCombine,2)),2);
@@ -392,6 +392,8 @@ plot(griXrdCommonSilicatesCarbonates,func_1,'--r')
 str = strcat('y =  ',num2str(polyfitClaySilicateCarbonate(1)),'*x + ',num2str(polyfitClaySilicateCarbonate(2)));
 title(str);
 hold off
+constantA = polyfitClaySilicateCarbonate(2);
+constantB = polyfitClaySilicateCarbonate(1);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,3)
@@ -407,6 +409,8 @@ plot(sumHeavies,func_2,'--r')
 str = strcat('y =  ',num2str(polyfitheaviesGrainDensity(1)),'*x + ',num2str(polyfitheaviesGrainDensity(2)));
 title(str);
 hold off
+constantC = polyfitheaviesGrainDensity(2);
+constantD = polyfitheaviesGrainDensity(1);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,4)
@@ -463,3 +467,20 @@ subplot(2,3,5)
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,6)
+
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+averageGrainDensity = 2.72;
+clayWeightpercentUpscaled = (logVclay./logRhob).*averageGrainDensity;
+densityMA = (100 - 1.1.*tocRohb + (constantC/constantD + constantA/constantB) - clayWeightpercentUpscaled/constantB - clayWeightpercentUpscaled)*constantD;
+
+numeratorPhi = densityMA - logRhob.*((densityMA.*tocRohb)/densityKerogen - tocRohb + 1);
+denominatorPhi = densityMA - densityFluid + densityFluid.*tocRohb.*(1 - densityMA./densityKerogen);
+porosityWithKerogen = numeratorPhi./denominatorPhi;
+
+figure(1)
+subplot (1,10,8)
+plot(porosityWithKerogen, logdepth,'r')
+legend('phi-w/o-K','GRI','phi-w-K')
+format long
+figure(2)
