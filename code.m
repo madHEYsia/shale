@@ -66,6 +66,8 @@ dtcBaseHist = 60;
 levelOfMaturity = 12;
 scalingFactor1 = 70;
 scalingFactor2 = 0.75;
+scalingFactor3 = 10;
+scalingFactor4 = 0.75;
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 LOG = xlsread(logFileName);
@@ -426,8 +428,11 @@ figure(1)
 subplot (1,10,6)
 hold on
 tocRohb = polyfitblkdXrdToc(1).*logRhob + polyfitblkdXrdToc(2);
+tocMix = (scalingFactor3/levelOfMaturity).*deltaLogR + scalingFactor4./logRhob;
 plot(tocRohb, logdepth, 'b') %toc RHOB
-legend('TOC_Passey','TOC_XRD','TOC_RHOB')
+hold on
+plot(tocMix, logdepth,'g')
+legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
 format long
 
 figure
@@ -439,7 +444,9 @@ plot(c(:,7),c(:,1),'ok')
 axis ij 
 hold on 
 plot(tocRohb, logdepth, 'b') %toc RHOB
-legend('TOC_Passey','TOC_XRD','TOC_RHOB')
+hold on 
+plot(tocMix, logdepth,'g')
+legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
 
 figure(2)
 
