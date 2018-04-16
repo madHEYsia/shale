@@ -255,6 +255,8 @@ hold on
 subplot (1,10,5)%vshale
 
 logVshale = (logECGR-logSandLineHist)./(logShaleLineHist-logSandLineHist);
+logVshale(logVshale<=0) = 0.001; 
+logVshale(logVshale>1) = 0.999; 
 plot(logVshale,logdepth)
 xlabel('Volume Percentages(%)')
 ylabel('Depth (meters)')
