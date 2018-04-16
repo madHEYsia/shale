@@ -33,6 +33,7 @@ griDepthIndex = 2;
 griBulkDensityIndex = 3;
 griGrainDensityIndex = 7;
 griPorosityIndex = 8;
+griSaturationIndex=10;
 sraDepthIndex=1;
 sraTmaxIndex=6;
 sraHIIndex=8;
@@ -45,7 +46,7 @@ clayIndex = [8 9 10 11];
 %Plot ranges--------------------------------------------------------------------------------------------------------------------------
 logRange = [15998 17603];
 logEcgrUrXaxisRange = [0 400];
-logDepthRange = [2800 3100];
+logDepthRange = [2800 3060];
 logNphiXaxisRange = [-0.15 0.45];
 logRhobXaxisRange = [1.8 2.9];
 logDtcXaxisRange = [0 200];
@@ -53,10 +54,13 @@ logDreshXaxisRange = [0.1 1000];
 logVshaleXaxisRange = [-1 2];
 xrdNonClayRange = [4 10];
 xrdClayRange = [11 14];
-xrdTocPasseyXaxisRange = [-1 10];
+xrdTocPasseyXaxisRange = [-1 5];
 griXrdPlotRange = [2 3];
-porosityWithoutKeroXaxisRange = [-0.5 1];
+porosityWithoutKeroXaxisRange = [-0.1 0.4];
 saturationRange = [0 1];
+picketlogDreshIndex=[16998 17603];
+picketplotXaxisRange=[0.1 1000];
+picketplotYaxisRange=[0.001 0.1];
 %Parameter Constants------------------------------------------------------------------------------------------------------------------
 logSandLineHist = 80;
 logShaleLineHist = 190;
@@ -68,7 +72,9 @@ scalingFactor1 = 70;
 scalingFactor2 = 0.75;
 scalingFactor3 = 10;
 scalingFactor4 = 0.75;
-
+cementationExponentM=1.8;
+saturationExponentN=2;
+TortuosityFactorA=1;
 %-------------------------------------------------------------------------------------------------------------------------------------
 LOG = xlsread(logFileName);
 XRD = xlsread(xrdFileName);
@@ -110,6 +116,7 @@ griDepth = GRI(:,griDepthIndex);
 griGrainDensity = GRI(:,griGrainDensityIndex);
 griBulkDensity = GRI(:,griBulkDensityIndex);
 griPorosity = GRI(:,griPorosityIndex);
+griSaturation=GRI(:,griSaturationIndex);
 
 c=[];
 griXrdCommonWeightPercentage = [];
@@ -129,6 +136,7 @@ for j= 1:length(GRI)
             c(cIndex,9+numberOfMinerals) = XRDGrainDensityWithoutKerogen(k,1);  
             c(cIndex,9+numberOfMinerals+1) = griPorosity(j,1);
             griXrdCommonWeightPercentage(cIndex,:) = weightPercentsNormalized(k,:);
+            c(cIndex,9+numberOfMinerals+2) = griSaturation(j,1);
         end
     end 
 end
@@ -317,6 +325,7 @@ legend('phi-w/o-K','GRI')
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,9) %saturation from logs and core (gri)
 
+plot(c(:,9+numberOfMinerals+2),c(:,1),'o')
 xlim([saturationRange(1,1) saturationRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
 xlabel('Saturation')
@@ -352,12 +361,12 @@ set(h(2),'FaceColor',[0.2 0.4 1]);
 set(h(3),'FaceColor',[0.6 0.8 0.6]);
 set(h(4),'FaceColor',[1 0 0]);
 set(gca,'XTick',[]);
-[~,h_legend] = legend('Silicates','Carbonates','Clay','Heavies');
-PatchInLegend = findobj(h_legend, 'type', 'patch');
-set(PatchInLegend(1), 'FaceAlpha', 0.2);
-set(PatchInLegend(2), 'FaceAlpha', 0.4);
-set(PatchInLegend(3), 'FaceAlpha', 0.2);
-set(PatchInLegend(4), 'FaceAlpha', 0.4);   
+%[~,h_legend] = legend('Silicates','Carbonates','Clay','Heavies');
+%PatchInLegend = findobj(h_legend, 'type', 'patch');
+%set(PatchInLegend(1), 'FaceAlpha', 0.2);
+%set(PatchInLegend(2), 'FaceAlpha', 0.4);
+%set(PatchInLegend(3), 'FaceAlpha', 0.2);
+%set(PatchInLegend(4), 'FaceAlpha', 0.4);   
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure
 
@@ -367,15 +376,15 @@ hold on
 plot (c(:,2),c(:,3),'o')
 xlim(griXrdPlotRange);
 ylim(griXrdPlotRange);
-xlabel('griGrainDensity')
-ylabel('XRDGrainDensityWithKerogen')
+xlabel('Measured Grain Density(gm/cc)')
+ylabel('Calculated Grain Density(gm/cc)')
 
 hold on 
 %y=x line
 x=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
 y=griXrdPlotRange(1,1):0.1:griXrdPlotRange(1,2);
 plot(x,y)
-title('y = x ');
+title('Comparison b/w Measured and Calculated Grain Density ');
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,2)
@@ -471,11 +480,11 @@ subplot(2,3,6)
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 averageGrainDensity = 2.72;
-clayWeightpercentUpscaled = (logVclay./logRhob).*averageGrainDensity;
+clayWeightpercentUpscaled = (logVclay./logRhob).*averageGrainDensity.*100;
 densityMA = (100 - 1.1.*tocRohb + (constantC/constantD + constantA/constantB) - clayWeightpercentUpscaled/constantB - clayWeightpercentUpscaled)*constantD;
 
-numeratorPhi = densityMA - logRhob.*((densityMA.*tocRohb)/densityKerogen - tocRohb + 1);
-denominatorPhi = densityMA - densityFluid + densityFluid.*tocRohb.*(1 - densityMA./densityKerogen);
+numeratorPhi = densityMA - logRhob.*((densityMA.*tocPassey./100)/densityKerogen - tocPassey./100 + 1);
+denominatorPhi = densityMA - densityFluid + densityFluid.*tocPassey./100.*(1 - densityMA./densityKerogen);
 porosityWithKerogen = numeratorPhi./denominatorPhi;
 
 figure(1)
@@ -483,4 +492,39 @@ subplot (1,10,8)
 plot(porosityWithKerogen, logdepth,'r')
 legend('phi-w/o-K','GRI','phi-w-K')
 format long
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+subplot(1,10,9)
+hold on
+Rw=0.12;
+saturationWithKerogen=((TortuosityFactorA.*Rw)./(porosityWithKerogen.^cementationExponentM.*logDresh)).^1./saturationExponentN;
+plot(saturationWithKerogen,logdepth,'r')
+legend('Saturation','Sat_GRI')
+format long
+
+
+
+figure()
+picketlogDreshIndexstart=picketlogDreshIndex(1,1)-logRange(1,1)+1;
+picketlogDreshIndexend=picketlogDreshIndex(1,2)-logRange(1,1)+1;
+
+picketlogDresh=logDresh(picketlogDreshIndexstart:picketlogDreshIndexend);
+picketPorosity=porosityWithKerogen(picketlogDreshIndexstart:picketlogDreshIndexend);
+loglog(picketlogDresh,picketPorosity,'o')
+hold on
+y=-cementationExponentM.*x;
+loglog(x,y);
+
+format long
+xlim([picketplotXaxisRange(1,1) picketplotXaxisRange(1,2)])
+ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
+legend('porosity & Resistivity')
+xlabel('porosity and resistivity')
+hold on 
+
+
 figure(2)
+
