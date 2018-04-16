@@ -256,10 +256,11 @@ subplot (1,10,5)%vshale
 
 logVshale = (logECGR-logSandLineHist)./(logShaleLineHist-logSandLineHist);
 plot(logVshale,logdepth)
-xlabel('Vsh Vcl XrdTcl')
+xlabel('Volume Percentages(%)')
+ylabel('Depth (meters)')
 xlim([logVshaleXaxisRange(1,1) logVshaleXaxisRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
-set(gca,'YTick',[]);
+%set(gca,'YTick',[]);
 axis ij
 logVclay = clayFactor.*logVshale;
 hold on 
@@ -274,7 +275,8 @@ clayVolumePercentageSum = sum(clayVolumePercentage,2);
 clayVolumeSum = clayVolumePercentageSum/100;
 hold on 
 plot(clayVolumeSum, c(:,1),'ok')
-legend('Vsh','Vcl','XRDclay')
+legend('Vsh calculated from GR log','Vcl calculated from Vsh','Vclay converted from XRD wt %')
+title('Vsh , Vclay Calculated and Vclay measured')
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,6)%TOC passeys and XRD;
@@ -469,7 +471,7 @@ xrdUrCommon = [];
 index = 0;
 for j= 1:length(UR)       
     for  k= 1:length(XRD)
-        if  round(logdepth(j,1)*100)/100 == round(xrdDepth(k,1)*100)/100 %grain density xrd vs gri calibration at same depth data
+        if  round(logdepth(j,1)*10)/10 == round(xrdDepth(k,1)*10)/10 %grain density xrd vs gri calibration at same depth data
             index = index+1;
             xrdUrCommon(index,1) = UR(j,1);
             xrdUrCommon(index,2) = xrdToc(k,1);
@@ -477,8 +479,9 @@ for j= 1:length(UR)
     end 
 end
 plot (xrdUrCommon(:,2), xrdUrCommon(:,1), 'o');
-xlabel('TOC_XRD')
+xlabel('Core TOC (%)')
 ylabel('Uranium')
+title('CrossPlot : Uranium log with Core TOC')
 polyfitXrdUr = polyfit(xrdUrCommon(:,2), xrdUrCommon(:,1), 1);
 func_4 = polyval(polyfitXrdUr,xrdUrCommon(:,2));
 hold on
