@@ -461,24 +461,40 @@ hold on
 plot(tocMix, logdepth,'g')
 legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
 
-figure(2)
-
 %-------------------------------------------------------------------------------------------------------------------------------------
+figure(2)
 subplot(2,3,5)
 
-% depthSra=SRA(:,sraDepthIndex);
-% TmaxSra=SRA(:,sraTmaxIndex);
-% HISra=SRA(:,sraHIIndex);
-% OISra=SRA(:,sraOIIndex);
-% plot(TmaxSra,HISra,'o');
-% plot(OISra,HISra,'o');
-% axis([0 400 0 800])
+xrdUrCommon = [];
+index = 0;
+for j= 1:length(UR)       
+    for  k= 1:length(XRD)
+        if  round(logdepth(j,1)*100)/100 == round(xrdDepth(k,1)*100)/100 %grain density xrd vs gri calibration at same depth data
+            index = index+1;
+            xrdUrCommon(index,1) = UR(j,1);
+            xrdUrCommon(index,2) = xrdToc(k,1);
+        end
+    end 
+end
+plot (xrdUrCommon(:,2), xrdUrCommon(:,1), 'o');
+xlabel('TOC_XRD')
+ylabel('Uranium')
+polyfitXrdUr = polyfit(xrdUrCommon(:,2), xrdUrCommon(:,1), 1);
+func_4 = polyval(polyfitXrdUr,xrdUrCommon(:,2));
+hold on
+plot(xrdUrCommon(:,2),func_4,'--r')
+str = strcat('y =  ',num2str(polyfitXrdUr(1)),'*x + ',num2str(polyfitXrdUr(2)));
+title(str);
+hold off
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,6)
 
 
 %-------------------------------------------------------------------------------------------------------------------------------------
+figure(1)
+subplot (1,10,8)
+
 averageGrainDensity = 2.72;
 clayWeightpercentUpscaled = (logVclay./logRhob).*averageGrainDensity.*100;
 densityMA = (100 - 1.1.*tocRohb + (constantC/constantD + constantA/constantB) - clayWeightpercentUpscaled/constantB - clayWeightpercentUpscaled)*constantD;
@@ -487,16 +503,12 @@ numeratorPhi = densityMA - logRhob.*((densityMA.*tocPassey./100)/densityKerogen 
 denominatorPhi = densityMA - densityFluid + densityFluid.*tocPassey./100.*(1 - densityMA./densityKerogen);
 porosityWithKerogen = numeratorPhi./denominatorPhi;
 
-figure(1)
-subplot (1,10,8)
 plot(porosityWithKerogen, logdepth,'r')
 legend('phi-w/o-K','GRI','phi-w-K')
 format long
 
 %-------------------------------------------------------------------------------------------------------------------------------------
-
-
-
+figure(1)
 subplot(1,10,9)
 hold on
 Rw=0.12;
@@ -505,9 +517,7 @@ plot(saturationWithKerogen,logdepth,'r')
 legend('Saturation','Sat_GRI')
 format long
 
-
-
-figure()
+figure
 picketlogDreshIndexstart=picketlogDreshIndex(1,1)-logRange(1,1)+1;
 picketlogDreshIndexend=picketlogDreshIndex(1,2)-logRange(1,1)+1;
 
@@ -524,7 +534,3 @@ ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
 legend('porosity & Resistivity')
 xlabel('porosity and resistivity')
 hold on 
-
-
-figure(2)
-
