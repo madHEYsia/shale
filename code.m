@@ -108,8 +108,8 @@ for i=1:size(weightPercentCombine,1)
     XRDGrainDensityWithoutKerogen(i,1) = 100/temp;
     XRDGrainDensityWithKerogen(i,1) = 100/(temp + weightPercentKerogen(i,1)/densityKerogen);
 end
-xrdNonClayNormSum = sum(weightPercentsNormalized(:,1:size(xrdNonClayWeightPercent,2)),2);
-xrdClayNormSum = sum(weightPercentsNormalized(:,(size(xrdNonClayWeightPercent,2)+1):size(weightPercentCombine,2)),2);
+xrdNonClayWeightNormSum = sum(weightPercentsNormalized(:,1:size(xrdNonClayWeightPercent,2)),2);
+xrdClayWeightNormSum = sum(weightPercentsNormalized(:,(size(xrdNonClayWeightPercent,2)+1):size(weightPercentCombine,2)),2);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 griDepth = GRI(:,griDepthIndex);
@@ -128,8 +128,8 @@ for j= 1:length(GRI)
             c(cIndex,1) = griDepth(j,1);
             c(cIndex,2) = griGrainDensity(j,1);
             c(cIndex,3) = XRDGrainDensityWithKerogen(k,1);
-            c(cIndex,4) = xrdNonClayNormSum(k,1);
-            c(cIndex,5) = xrdClayNormSum(k,1);
+            c(cIndex,4) = xrdNonClayWeightNormSum(k,1);
+            c(cIndex,5) = xrdClayWeightNormSum(k,1);
             c(cIndex,6) = weightPercentKerogen(k,1);
             c(cIndex,8) = griBulkDensity(j,1);
             c(cIndex,9:8+numberOfMinerals) = weightByDensityNormalized(k,:);
@@ -272,6 +272,8 @@ for i=1:1:length(c)
 end
 nonClayVolumePercentage = mineralVolumePercentage(:,1:size(xrdNonClayWeightPercent,2));
 nonClayVolumePercentageSum = sum(nonClayVolumePercentage,2);
+crystalsVolumePercentageSum  = sum(horzcat(mineralVolumePercentage(:,silicateIndex), mineralVolumePercentage(:,carbonateIndex)),2);
+heaviesVolumePercentageSum  = sum(mineralVolumePercentage(:, heaviesIndex),2);
 clayVolumePercentage = mineralVolumePercentage(:,(size(xrdNonClayWeightPercent,2)+1):size(mineralVolumePercentage,2));
 clayVolumePercentageSum = sum(clayVolumePercentage,2);
 clayVolumeSum = clayVolumePercentageSum/100;
@@ -393,15 +395,15 @@ title('Comparison b/w Measured and Calculated Grain Density ');
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,2)
 
-griXrdCommonSilicatesCarbonates = sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2);
-sumgriXrdClays = sum(griXrdCommonWeightPercentage(:,clayIndex),2);
-plot (griXrdCommonSilicatesCarbonates, sumgriXrdClays, 'o');
-xlabel('griXrdCommonSilicatesCarbonates')
-ylabel('sumgriXrdClays')
-polyfitClaySilicateCarbonate = polyfit(griXrdCommonSilicatesCarbonates, sumgriXrdClays, 1);
-func_1 = polyval(polyfitClaySilicateCarbonate,griXrdCommonSilicatesCarbonates);
+% griXrdCommonSilicatesCarbonates = sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2);
+% sumgriXrdClays = sum(griXrdCommonWeightPercentage(:,clayIndex),2);
+plot (crystalsVolumePercentageSum, clayVolumePercentageSum, 'o');
+xlabel('crystalsVolumePercentageSum')
+ylabel('clayVolumePercentageSum')
+polyfitClaySilicateCarbonate = polyfit(crystalsVolumePercentageSum, clayVolumePercentageSum, 1);
+func_1 = polyval(polyfitClaySilicateCarbonate,crystalsVolumePercentageSum);
 hold on
-plot(griXrdCommonSilicatesCarbonates,func_1,'--r')
+plot(crystalsVolumePercentageSum,func_1,'--r')
 str = strcat('y =  ',num2str(polyfitClaySilicateCarbonate(1)),'*x + ',num2str(polyfitClaySilicateCarbonate(2)));
 title(str);
 hold off
@@ -411,14 +413,14 @@ constantB = polyfitClaySilicateCarbonate(1);
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,3)
 
-sumHeavies = sum(griXrdCommonWeightPercentage(:,heaviesIndex),2);
-plot(sumHeavies,c(:,9+numberOfMinerals),'o');  %heavies vs grain density plotted
-xlabel('sumHeavies')
+% sumHeavies = sum(griXrdCommonWeightPercentage(:,heaviesIndex),2);
+plot(heaviesVolumePercentageSum,c(:,9+numberOfMinerals),'o');  %heavies vs grain density plotted
+xlabel('heaviesVolumePercentageSum')
 ylabel('XRDGrainDensityWithoutKerogen')
-polyfitheaviesGrainDensity = polyfit(sumHeavies,c(:,9+numberOfMinerals), 1);
-func_2 = polyval(polyfitheaviesGrainDensity,sumHeavies);
+polyfitheaviesGrainDensity = polyfit(heaviesVolumePercentageSum,c(:,9+numberOfMinerals), 1);
+func_2 = polyval(polyfitheaviesGrainDensity,heaviesVolumePercentageSum);
 hold on
-plot(sumHeavies,func_2,'--r')
+plot(heaviesVolumePercentageSum,func_2,'--r')
 str = strcat('y =  ',num2str(polyfitheaviesGrainDensity(1)),'*x + ',num2str(polyfitheaviesGrainDensity(2)));
 title(str);
 hold off
@@ -501,8 +503,8 @@ figure(1)
 subplot (1,10,8)
 
 averageGrainDensity = 2.72;
-clayWeightpercentUpscaled = (logVclay./logRhob).*averageGrainDensity.*100;
-densityMA = (100 - 1.1.*tocRohb + (constantC/constantD + constantA/constantB) - clayWeightpercentUpscaled/constantB - clayWeightpercentUpscaled)*constantD;
+% clayWeightpercentUpscaled = (logVclay./logRhob).*averageGrainDensity.*100;
+densityMA = (100 - (1.1/densityKerogen).*tocPassey.*logRhob + (constantC/constantD + constantA/constantB) - logVclay/constantB - logVclay)*constantD;
 
 numeratorPhi = densityMA - logRhob.*((densityMA.*tocPassey./100)/densityKerogen - tocPassey./100 + 1);
 denominatorPhi = densityMA - densityFluid + densityFluid.*tocPassey./100.*(1 - densityMA./densityKerogen);
