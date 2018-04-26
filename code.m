@@ -72,7 +72,6 @@ scalingFactor1 = 70;
 scalingFactor2 = 0.75;
 scalingFactor3 = 10;
 scalingFactor4 = 0.75;
-cementationExponentM=1.8;
 saturationExponentN=2;
 TortuosityFactorA=1;
 %-------------------------------------------------------------------------------------------------------------------------------------
@@ -152,7 +151,9 @@ UR = LOG(logRange(1,1):logRange(1,2),logUranIndex);
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,1) 	%GR
 
-plot(logECGR,logdepth,'color','[0.9 0 1]') %ECGR
+plot(logECGR,logdepth) %ECGR
+fig = gcf;
+fig.Color = [0.9 0 1];
 axis ij
 xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
@@ -520,15 +521,6 @@ plot(porosityWithKerogen, logdepth,'r')
 legend('phi-w/o-K','GRI','phi-w-K')
 format long
 
-%-------------------------------------------------------------------------------------------------------------------------------------
-figure(1)
-subplot(1,10,9)
-hold on
-Rw=0.12;
-saturationWithKerogen=((TortuosityFactorA.*Rw)./(porosityWithKerogen.^cementationExponentM.*logDresh)).^1./saturationExponentN;
-plot(saturationWithKerogen,logdepth,'r')
-legend('Saturation','Sat_GRI')
-format long
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -562,6 +554,8 @@ while(check)
 end
 waterResistivity = initalResistivity*(initalProrsity^cementationExponentM);
 
+figure (4)
+
 x = picketplotXaxisRange(1,1) : picketplotXaxisRange(1,2);
 x = log10(x); 
 y=(-1./cementationExponentM).*x + log(waterResistivity)/cementationExponentM;
@@ -577,4 +571,14 @@ xlabel('porosity and resistivity')
 hold on 
 str = strcat('y =  ',num2str(-1./cementationExponentM),'*x + ',num2str(log(waterResistivity)/cementationExponentM));
 title(str);
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+figure(1)
+subplot(1,10,9)
+hold on
+saturationWithKerogen=((TortuosityFactorA.*waterResistivity)./(porosityWithKerogen.^cementationExponentM.*logDresh)).^1./saturationExponentN;
+plot(saturationWithKerogen,logdepth,'r')
+legend('Saturation','Sat_GRI')
+format long
+
 clc
