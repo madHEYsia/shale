@@ -141,7 +141,8 @@ end
 c(:,7) = c(:,6)/1.1;
 
 %-------------------------------------------------------------------------------------------------------------------------------------
-figure; % start different figure
+% start different figure
+figure('units','normalized','outerposition',[0 0 1 1])
 
 logdepth = LOG(logRange(1,1):logRange(1,2),logDepthIndex);
 logECGR = LOG(logRange(1,1):logRange(1,2),logEcgrIndex);
@@ -374,7 +375,7 @@ set(gca,'XTick',[]);
 %set(PatchInLegend(3), 'FaceAlpha', 0.2);
 %set(PatchInLegend(4), 'FaceAlpha', 0.4);   
 %-------------------------------------------------------------------------------------------------------------------------------------
-figure
+figure('units','normalized','outerposition',[0 0 1 1])
 
 subplot(2,3,1)
 format long g
@@ -517,7 +518,7 @@ format long
 
 
 %-------------------------------------------------------------------------------------------------------------------------------------
-figure
+figure('units','normalized','outerposition',[0 0 1 1])
 
 subplot(1,3,1)
 plot(logECGR,logdepth) %ECGR
@@ -592,6 +593,13 @@ initalResistivity = logDresh(initalResPorIndex, 1);
 initalPorosity = porosityWithKerogen(initalResPorIndex, 1);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
+figure('units','normalized','outerposition',[0 0 1 1])
+picketlogDresh=logDresh(startRange:endRange);
+picketPorosity=porosityWithKerogen(startRange:endRange);
+loglog(picketlogDresh,picketPorosity,'o')
+hold on
+
+%-------------------------------------------------------------------------------------------------------------------------------------
 dlg_title = 'Cementation Parameter';
 prompt = {'Enter cementation Value', 'Inital Porosity', 'Inital Resistivity'};
 input = {'2', num2str(initalPorosity), num2str(initalResistivity)};
@@ -605,45 +613,53 @@ while(check)
     elseif(isnan(str2double(input{3})))
          prompt{1,3}='Enter Valid Resistivity Value';
     else
-        check=0;
         cementationExponentM = str2double(input{1});
         initalPorosity = str2double(input{2});
         initalResistivity = str2double(input{3});
+
+        waterResistivity = initalResistivity*(initalPorosity^cementationExponentM);
+
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        close figure 4
+        figure('units','normalized','outerposition',[0 0 1 1])
+        picketlogDresh=logDresh(startRange:endRange);
+        picketPorosity=porosityWithKerogen(startRange:endRange);
+        loglog(picketlogDresh,picketPorosity,'o')
+        hold on
+
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        x = picketplotXaxisRange(1,1) : picketplotXaxisRange(1,2);
+        x = log10(x); 
+        y=(-1./cementationExponentM).*x + log(waterResistivity)/cementationExponentM;
+        x = 10.^x;
+        y = 10.^y;
+        loglog(x,y,'r');
+
+        format long
+        xlim([picketplotXaxisRange(1,1) picketplotXaxisRange(1,2)])
+        ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
+        legend('porosity & Resistivity')
+        xlabel('porosity and resistivity')
+        hold on 
+        str = strcat('log y =  ',num2str(-1./cementationExponentM),' * log x + ',num2str(log(waterResistivity)/cementationExponentM));
+        title(str);
+
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        figure(1)
+        subplot(1,10,9)
+        hold off
+        plot(c(:,9+numberOfMinerals+2),c(:,1),'o')
+        xlim([saturationRange(1,1) saturationRange(1,2)])
+        ylim([logDepthRange(1,1) logDepthRange(1,2)])
+        xlabel('Saturation')
+        set(gca,'YTick',[]);
+        axis ij
+        hold on
+        saturationWithKerogen=((TortuosityFactorA.*waterResistivity)./(porosityWithKerogen.^cementationExponentM.*logDresh)).^1./saturationExponentN;
+        plot(saturationWithKerogen,logdepth,'r')
+        legend('Saturation','Sat_GRI')
+        format long
     end    
 end
-waterResistivity = initalResistivity*(initalPorosity^cementationExponentM);
-
-%-------------------------------------------------------------------------------------------------------------------------------------
-figure
-picketlogDresh=logDresh(startRange:endRange);
-picketPorosity=porosityWithKerogen(startRange:endRange);
-loglog(picketlogDresh,picketPorosity,'o')
-hold on
-
-%-------------------------------------------------------------------------------------------------------------------------------------
-x = picketplotXaxisRange(1,1) : picketplotXaxisRange(1,2);
-x = log10(x); 
-y=(-1./cementationExponentM).*x + log(waterResistivity)/cementationExponentM;
-x = 10.^x;
-y = 10.^y;
-loglog(x,y,'r');
-
-format long
-xlim([picketplotXaxisRange(1,1) picketplotXaxisRange(1,2)])
-ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
-legend('porosity & Resistivity')
-xlabel('porosity and resistivity')
-hold on 
-str = strcat('log y =  ',num2str(-1./cementationExponentM),' * log x + ',num2str(log(waterResistivity)/cementationExponentM));
-title(str);
-
-%-------------------------------------------------------------------------------------------------------------------------------------
-figure(1)
-subplot(1,10,9)
-hold on
-saturationWithKerogen=((TortuosityFactorA.*waterResistivity)./(porosityWithKerogen.^cementationExponentM.*logDresh)).^1./saturationExponentN;
-plot(saturationWithKerogen,logdepth,'r')
-legend('Saturation','Sat_GRI')
-format long
 
 clc
