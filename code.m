@@ -58,7 +58,6 @@ xrdTocPasseyXaxisRange = [-1 5];
 griXrdPlotRange = [2 3];
 porosityWithoutKeroXaxisRange = [-0.1 0.4];
 saturationRange = [0 1];
-picketlogDreshIndex=[16998 17603];
 picketplotXaxisRange=[0.1 1000];
 picketplotYaxisRange=[0.01 1];
 %Parameter Constants------------------------------------------------------------------------------------------------------------------
@@ -150,10 +149,7 @@ UR = LOG(logRange(1,1):logRange(1,2),logUranIndex);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,1) 	%GR
-
 plot(logECGR,logdepth) %ECGR
-fig = gcf;
-fig.Color = [0.9 0 1];
 axis ij
 xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
@@ -523,13 +519,22 @@ format long
 
 
 %-------------------------------------------------------------------------------------------------------------------------------------
+figure (1)
+[~,yValue] = ginput(2);
+
+for i=1:size(logdepth,1) 
+   if logdepth(i,1)<min(yValue(1,1), yValue(2,1))
+       startRange = i;
+   end  
+   if logdepth(i,1)<max(yValue(1,1), yValue(2,1))
+       endRange = i;
+   end 
+end
 
 figure
-picketlogDreshIndexstart=picketlogDreshIndex(1,1)-logRange(1,1)+1;
-picketlogDreshIndexend=picketlogDreshIndex(1,2)-logRange(1,1)+1;
 
-picketlogDresh=logDresh(picketlogDreshIndexstart:picketlogDreshIndexend);
-picketPorosity=porosityWithKerogen(picketlogDreshIndexstart:picketlogDreshIndexend);
+picketlogDresh=logDresh(startRange:endRange);
+picketPorosity=porosityWithKerogen(startRange:endRange);
 loglog(picketlogDresh,picketPorosity,'o')
 hold on
 
@@ -569,7 +574,7 @@ ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
 legend('porosity & Resistivity')
 xlabel('porosity and resistivity')
 hold on 
-str = strcat('y =  ',num2str(-1./cementationExponentM),'*x + ',num2str(log(waterResistivity)/cementationExponentM));
+str = strcat('log y =  ',num2str(-1./cementationExponentM),' * log x + ',num2str(log(waterResistivity)/cementationExponentM));
 title(str);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
