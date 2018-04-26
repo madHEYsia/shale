@@ -665,7 +665,7 @@ while(check)
         hold on
         saturationWithKerogen = zeros(size(logdepth));
         for i=1:length(logdepth)
-            saturationWithKerogen(i,1)=((TortuosityFactorA*resistivityArps(i,1))./(porosityWithKerogen(i,1)^cementationExponentM.*logDresh(i,1))).^1./saturationExponentN;            
+            saturationWithKerogen(i,1)=((TortuosityFactorA*resistivityArps(i,1))/((porosityWithKerogen(i,1)^cementationExponentM)*logDresh(i,1)))^(1/saturationExponentN);            
         end
         plot(saturationWithKerogen,logdepth,'r')
         legend('Saturation','Sat_GRI')
