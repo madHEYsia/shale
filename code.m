@@ -48,7 +48,7 @@ logRange = [15998 17603];
 logEcgrUrXaxisRange = [0 400];
 logDepthRange = [2800 3060];
 logNphiXaxisRange = [-0.15 0.45];
-logRhobXaxisRange = [1.8 2.9];
+logRhobXaxisRange = [1.95 2.95];
 logDtcXaxisRange = [0 200];
 logDreshXaxisRange = [0.1 1000];
 logVshaleXaxisRange = [-1 2];
@@ -152,12 +152,13 @@ UR = LOG(logRange(1,1):logRange(1,2),logUranIndex);
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot (1,10,1) 	%GR
 
-plot(logECGR,logdepth,'c') %ECGR
+plot(logECGR,logdepth,'color','[0.9 0 1]') %ECGR
 axis ij
 xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
-xlabel('GR & UR')
-
+xlabel('Gamma Ray (gAPI)')
+ylabel('Depth (meters)')
+legend('Gamma Ray')
 ax1 = gca;
 ax1_pos = get(ax1,'Position'); % position of first axes
 ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) 0.94*ax1_pos(1,3) ax1_pos(1,4)],...
@@ -170,6 +171,8 @@ set(ax2,'XColor','r');
 set(ax2,'YColor','r');
 set(ax2,'YTick',[]);
 axis ij
+xlabel('Uranium')
+legend('Uranium')
 xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
 format long
@@ -210,7 +213,7 @@ ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) 0.94*ax1_pos(1,3) ax1_pos(1,4)]
     'YAxisLocation','right',...
     'Color','none');
 hold on
-plot(logRhob,logdepth,'parent',ax2,'color','r')%density
+plot(logRhob,logdepth,'parent',ax2,'color','r')%densitclosy
 axis ij
 xlim([logRhobXaxisRange(1,1) logRhobXaxisRange(1,2)]);
 ylim([logDepthRange(1,1) logDepthRange(1,2)]);
@@ -317,7 +320,7 @@ subplot (1,10,8)%porosity
 
 porosityWithoutKerogen = (logRhob-(densityShale.*logVshale+densitySand.*(1-logVshale)))./(densityFluid-(densityShale.*logVshale+densitySand.*(1-logVshale)));
 plot(porosityWithoutKerogen, logdepth,'k')
-xlabel('phi-w/o-K')
+xlabel('phi')
 xlim([porosityWithoutKeroXaxisRange(1,1) porosityWithoutKeroXaxisRange(1,2)])
 ylim([logDepthRange(1,1) logDepthRange(1,2)])
 axis ij
@@ -398,14 +401,15 @@ subplot(2,3,2)
 % griXrdCommonSilicatesCarbonates = sum(griXrdCommonWeightPercentage(:,horzcat(silicateIndex,carbonateIndex)),2);
 % sumgriXrdClays = sum(griXrdCommonWeightPercentage(:,clayIndex),2);
 plot (crystalsVolumePercentageSum, clayVolumePercentageSum, 'o');
-xlabel('crystalsVolumePercentageSum')
-ylabel('clayVolumePercentageSum')
+xlabel('Core Crystals (Volume%)')
+ylabel('Core Clays (Volume%)')
 polyfitClaySilicateCarbonate = polyfit(crystalsVolumePercentageSum, clayVolumePercentageSum, 1);
 func_1 = polyval(polyfitClaySilicateCarbonate,crystalsVolumePercentageSum);
 hold on
 plot(crystalsVolumePercentageSum,func_1,'--r')
 str = strcat('y =  ',num2str(polyfitClaySilicateCarbonate(1)),'*x + ',num2str(polyfitClaySilicateCarbonate(2)));
 title(str);
+legend('Data at common Depth', 'Fitted Linear Trend')
 hold off
 constantA = polyfitClaySilicateCarbonate(2);
 constantB = polyfitClaySilicateCarbonate(1);
@@ -415,14 +419,16 @@ subplot(2,3,3)
 
 % sumHeavies = sum(griXrdCommonWeightPercentage(:,heaviesIndex),2);
 plot(heaviesVolumePercentageSum,c(:,9+numberOfMinerals),'o');  %heavies vs grain density plotted
-xlabel('heaviesVolumePercentageSum')
-ylabel('XRDGrainDensityWithoutKerogen')
+xlabel('Core Heavies (Volume%)')
+ylabel('Calculated GrainDensity w/o Kerogen')
 polyfitheaviesGrainDensity = polyfit(heaviesVolumePercentageSum,c(:,9+numberOfMinerals), 1);
 func_2 = polyval(polyfitheaviesGrainDensity,heaviesVolumePercentageSum);
 hold on
 plot(heaviesVolumePercentageSum,func_2,'--r')
 str = strcat('y =  ',num2str(polyfitheaviesGrainDensity(1)),'*x + ',num2str(polyfitheaviesGrainDensity(2)));
 title(str);
+legend('Data at common Depth', 'Fitted Linear Trend')
+
 hold off
 constantC = polyfitheaviesGrainDensity(2);
 constantD = polyfitheaviesGrainDensity(1);
