@@ -457,18 +457,6 @@ plot(tocMix, logdepth,'g')
 legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
 format long
 
-figure
-plot(tocPassey, logdepth,'r')
-xlim([xrdTocPasseyXaxisRange(1,1) xrdTocPasseyXaxisRange(1,2)])
-ylim([logDepthRange(1,1) logDepthRange(1,2)])
-hold on 
-plot(c(:,7),c(:,1),'ok')
-axis ij 
-hold on 
-plot(tocRohb, logdepth, 'b') %toc RHOB
-hold on 
-plot(tocMix, logdepth,'g')
-legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure(2)
@@ -499,7 +487,17 @@ hold off
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 subplot(2,3,6)
-
+plot(tocPassey, logdepth,'r')
+xlim([xrdTocPasseyXaxisRange(1,1) xrdTocPasseyXaxisRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+hold on 
+plot(c(:,7),c(:,1),'ok')
+axis ij 
+hold on 
+plot(tocRohb, logdepth, 'b') %toc RHOB
+hold on 
+plot(tocMix, logdepth,'g')
+legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure(1)
@@ -519,8 +517,65 @@ format long
 
 
 %-------------------------------------------------------------------------------------------------------------------------------------
-figure (1)
-[~,yValue] = ginput(2);
+figure
+
+subplot(1,3,1)
+plot(logECGR,logdepth) %ECGR
+axis ij
+xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
+ylim([logDepthRange(1,1) logDepthRange(1,2)]);
+xlabel('Gamma Ray (gAPI)')
+ylabel('Depth (meters)')
+legend('Gamma Ray')
+
+subplot(1,3,2)
+plot(logNphi,logdepth,'g')%neutron
+xlim([logNphiXaxisRange(1,1) logNphiXaxisRange(1,2)])
+ylim([logDepthRange(1,1) logDepthRange(1,2)])
+axis ij
+set(gca,'XDir','reverse')
+xlabel('density & neutron')
+format long
+
+axRhob = gca;
+ax1_pos = get(axRhob,'Position'); 
+ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) ax1_pos(1,3) ax1_pos(1,4)],...
+    'XAxisLocation','top',...
+    'YAxisLocation','right',...
+    'Color','none');
+hold on
+plot(logRhob,logdepth,'parent',ax2,'color','r')%densitclosy
+axis ij
+xlim([logRhobXaxisRange(1,1) logRhobXaxisRange(1,2)]);
+ylim([logDepthRange(1,1) logDepthRange(1,2)]);
+set(ax2,'XColor','r');
+set(ax2,'YColor','r');
+hold on 
+axis ij 
+legend('RHOB')
+
+subplot(1,3,3)
+semilogx(logDresh, logdepth, 'Color', 'r')%deep resistivity.
+axis([logDreshXaxisRange(1,1) logDreshXaxisRange(1,2) logDepthRange(1,1) logDepthRange(1,2)])
+axis ij
+format long
+xlabel('resistivity')
+
+%-------------------------------------------------------------------------------------------------------------------------------------
+[xValue,yValue] = ginput(3);
+
+text(xValue(1,1),yValue(1,1),'---------------Start Depth---------------', ...
+                'HorizontalAlignment','center', ...
+                'Color', [0.9 0 1], ...
+                'FontSize',8);
+text(xValue(2,1),yValue(2,1),'----------------End Depth----------------', ...
+                'HorizontalAlignment','center', ...
+                'Color', [0.9 0 1], ...
+                'FontSize',8);
+text(xValue(3,1),yValue(3,1),'------Index for Resistivity-Porosity-----', ...
+                'HorizontalAlignment','center', ...
+                'Color', [0.9 0 1], ...
+                'FontSize',8);
 
 for i=1:size(logdepth,1) 
    if logdepth(i,1)<min(yValue(1,1), yValue(2,1))
@@ -529,38 +584,43 @@ for i=1:size(logdepth,1)
    if logdepth(i,1)<max(yValue(1,1), yValue(2,1))
        endRange = i;
    end 
+   if logdepth(i,1)<yValue(3,1)
+       initalResPorIndex = i;
+   end 
 end
+initalResistivity = logDresh(initalResPorIndex, 1);
+initalPorosity = porosityWithKerogen(initalResPorIndex, 1);
 
-figure
-
-picketlogDresh=logDresh(startRange:endRange);
-picketPorosity=porosityWithKerogen(startRange:endRange);
-loglog(picketlogDresh,picketPorosity,'o')
-hold on
-
-dlg_title = 'Picket plot parameters';
-prompt = {'Enter cementation Value','Initial Porosity','Initial Resistivity'};
-input = {'2','0.1152','82.45'};
+%-------------------------------------------------------------------------------------------------------------------------------------
+dlg_title = 'Cementation Parameter';
+prompt = {'Enter cementation Value', 'Inital Porosity', 'Inital Resistivity'};
+input = {'2', num2str(initalPorosity), num2str(initalResistivity)};
 check=1;
 while(check)
     input = inputdlg(prompt,dlg_title,[1 69],input);
     if(isnan(str2double(input{1})))
          prompt{1,1}='Enter Valid cement Value';
-    elseif (isnan(str2double(input{2})))
-         prompt{1,2}='Enter Valid Initial Porosity';
-    elseif (isnan(str2double(input{3})))
-         prompt{1,3}='Enter Valid Initial Resistivity';
+    elseif(isnan(str2double(input{2})))
+         prompt{1,2}='Enter Valid Porosity Value';
+    elseif(isnan(str2double(input{3})))
+         prompt{1,3}='Enter Valid Resistivity Value';
     else
         check=0;
-        cementationExponentM=str2double(input{1});
-        initalProrsity=str2double(input{2});
-        initalResistivity=str2double(input{3});
+        cementationExponentM = str2double(input{1});
+        initalPorosity = str2double(input{2});
+        initalResistivity = str2double(input{3});
     end    
 end
-waterResistivity = initalResistivity*(initalProrsity^cementationExponentM);
+waterResistivity = initalResistivity*(initalPorosity^cementationExponentM);
 
-figure (4)
+%-------------------------------------------------------------------------------------------------------------------------------------
+figure
+picketlogDresh=logDresh(startRange:endRange);
+picketPorosity=porosityWithKerogen(startRange:endRange);
+loglog(picketlogDresh,picketPorosity,'o')
+hold on
 
+%-------------------------------------------------------------------------------------------------------------------------------------
 x = picketplotXaxisRange(1,1) : picketplotXaxisRange(1,2);
 x = log10(x); 
 y=(-1./cementationExponentM).*x + log(waterResistivity)/cementationExponentM;
