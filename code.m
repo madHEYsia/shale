@@ -661,5 +661,12 @@ while(check)
         format long
     end    
 end
+%-------------------------------------------------------------------------------------------------------------------------------------
 
-clc
+%geothermal gradient 
+surfaceTemp=14;
+tempGradient=25;
+temperature=surfaceTemp+tempGradient.*logdepth;
+resistivityArps=initalResistivity.*(temperature(index)+21.5)./(temperature(index)+21.5);
+
+
