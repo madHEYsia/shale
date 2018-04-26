@@ -589,8 +589,15 @@ for i=1:size(logdepth,1)
        initalResPorIndex = i;
    end 
 end
+
 initalResistivity = logDresh(initalResPorIndex, 1);
 initalPorosity = porosityWithKerogen(initalResPorIndex, 1);
+
+%geothermal gradient 
+surfaceTemp = 14;
+tempGradient = 0.025;
+temperature = surfaceTemp+tempGradient.*logdepth;
+resistivityArps = initalResistivity*(temperature(initalResPorIndex)+21.5)./(temperature+21.5);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure('units','normalized','outerposition',[0 0 1 1])
@@ -617,6 +624,7 @@ while(check)
         initalPorosity = str2double(input{2});
         initalResistivity = str2double(input{3});
 
+        resistivityArps = initalResistivity*(temperature(initalResPorIndex)+21.5)./(temperature+21.5);
         waterResistivity = initalResistivity*(initalPorosity^cementationExponentM);
 
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -655,18 +663,13 @@ while(check)
         set(gca,'YTick',[]);
         axis ij
         hold on
-        saturationWithKerogen=((TortuosityFactorA.*waterResistivity)./(porosityWithKerogen.^cementationExponentM.*logDresh)).^1./saturationExponentN;
+        saturationWithKerogen = zeros(size(logdepth));
+        for i=1:length(logdepth)
+            saturationWithKerogen(i,1)=((TortuosityFactorA*resistivityArps(i,1))./(porosityWithKerogen(i,1)^cementationExponentM.*logDresh(i,1))).^1./saturationExponentN;            
+        end
         plot(saturationWithKerogen,logdepth,'r')
         legend('Saturation','Sat_GRI')
         format long
     end    
 end
 %-------------------------------------------------------------------------------------------------------------------------------------
-
-%geothermal gradient 
-surfaceTemp=14;
-tempGradient=25;
-temperature=surfaceTemp+tempGradient.*logdepth;
-resistivityArps=initalResistivity.*(temperature(index)+21.5)./(temperature(index)+21.5);
-
-
