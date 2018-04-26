@@ -60,7 +60,7 @@ porosityWithoutKeroXaxisRange = [-0.1 0.4];
 saturationRange = [0 1];
 picketlogDreshIndex=[16998 17603];
 picketplotXaxisRange=[0.1 1000];
-picketplotYaxisRange=[0.001 0.1];
+picketplotYaxisRange=[0.01 1];
 %Parameter Constants------------------------------------------------------------------------------------------------------------------
 logSandLineHist = 80;
 logShaleLineHist = 190;
@@ -524,6 +524,8 @@ plot(saturationWithKerogen,logdepth,'r')
 legend('Saturation','Sat_GRI')
 format long
 
+%-------------------------------------------------------------------------------------------------------------------------------------
+
 figure
 picketlogDreshIndexstart=picketlogDreshIndex(1,1)-logRange(1,1)+1;
 picketlogDreshIndexend=picketlogDreshIndex(1,2)-logRange(1,1)+1;
@@ -532,8 +534,34 @@ picketlogDresh=logDresh(picketlogDreshIndexstart:picketlogDreshIndexend);
 picketPorosity=porosityWithKerogen(picketlogDreshIndexstart:picketlogDreshIndexend);
 loglog(picketlogDresh,picketPorosity,'o')
 hold on
-y=-cementationExponentM.*x;
-loglog(x,y);
+
+dlg_title = 'Picket plot parameters';
+prompt = {'Enter cementation Value','Initial Porosity','Initial Resistivity'};
+input = {'2','0.1152','82.45'};
+check=1;
+while(check)
+    input = inputdlg(prompt,dlg_title,[1 69],input);
+    if(isnan(str2double(input{1})))
+         prompt{1,1}='Enter Valid cement Value';
+    elseif (isnan(str2double(input{2})))
+         prompt{1,2}='Enter Valid Initial Porosity';
+    elseif (isnan(str2double(input{3})))
+         prompt{1,3}='Enter Valid Initial Resistivity';
+    else
+        check=0;
+        cementationExponentM=str2double(input{1});
+        initalProrsity=str2double(input{2});
+        initalResistivity=str2double(input{3});
+    end    
+end
+waterResistivity = initalResistivity*(initalProrsity^cementationExponentM);
+
+x = picketplotXaxisRange(1,1) : picketplotXaxisRange(1,2);
+x = log10(x); 
+y=(-1./cementationExponentM).*x + log(waterResistivity)/cementationExponentM;
+x = 10.^x;
+y = 10.^y;
+loglog(x,y,'r');
 
 format long
 xlim([picketplotXaxisRange(1,1) picketplotXaxisRange(1,2)])
@@ -541,3 +569,6 @@ ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
 legend('porosity & Resistivity')
 xlabel('porosity and resistivity')
 hold on 
+str = strcat('y =  ',num2str(-1./cementationExponentM),'*x + ',num2str(log(waterResistivity)/cementationExponentM));
+title(str);
+clc
