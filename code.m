@@ -72,7 +72,7 @@ scalingFactor2 = 0.75;
 scalingFactor3 = 10;
 scalingFactor4 = 0.75;
 saturationExponentN=2;
-TortuosityFactorA=1;
+TortuosityFactorA=0.65;
 %-------------------------------------------------------------------------------------------------------------------------------------
 LOG = xlsread(logFileName);
 XRD = xlsread(xrdFileName);
@@ -451,11 +451,11 @@ figure(1)
 subplot (1,10,6)
 hold on
 tocRohb = polyfitblkdXrdToc(1).*logRhob + polyfitblkdXrdToc(2);
-tocMix = (scalingFactor3/levelOfMaturity).*deltaLogR + scalingFactor4./logRhob;
+%tocMix = (scalingFactor3/levelOfMaturity).*deltaLogR + scalingFactor4./logRhob;
 plot(tocRohb, logdepth, 'b') %toc RHOB
 hold on
-plot(tocMix, logdepth,'g')
-legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
+%plot(tocMix, logdepth,'g')
+legend('TOC_Passey','TOC_XRD','TOC_RHOB')
 format long
 
 
@@ -497,8 +497,8 @@ axis ij
 hold on 
 plot(tocRohb, logdepth, 'b') %toc RHOB
 hold on 
-plot(tocMix, logdepth,'g')
-legend('TOC_Passey','TOC_XRD','TOC_RHOB','TOC_Mix')
+%plot(tocMix, logdepth,'g')
+legend('TOC_Passey','TOC_XRD','TOC_RHOB')
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure(1)
@@ -519,20 +519,28 @@ format long
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure('units','normalized','outerposition',[0 0 1 1])
+logDepthRangepicket=[1000 3100];
+logdepthpicketvaluerange=[3872 17603];
+logdepthpicket=LOG(logdepthpicketvaluerange(1):logdepthpicketvaluerange(2),logDepthIndex);
+logECGRpicket=LOG(logdepthpicketvaluerange(1):logdepthpicketvaluerange(2),logEcgrIndex) ;
+logNphipicket=LOG(logdepthpicketvaluerange(1):logdepthpicketvaluerange(2),logNphiIndex) ;
+logRhobpicket=LOG(logdepthpicketvaluerange(1):logdepthpicketvaluerange(2),logRhobIndex) ;
+logDreshpicket=LOG(logdepthpicketvaluerange(1):logdepthpicketvaluerange(2),logDreshIndex) ;
+
 
 subplot(1,3,1)
-plot(logECGR,logdepth) %ECGR
+plot(logECGRpicket,logdepthpicket) %ECGR
 axis ij
 xlim([logEcgrUrXaxisRange(1,1) logEcgrUrXaxisRange(1,2)]);
-ylim([logDepthRange(1,1) logDepthRange(1,2)]);
+ylim([logDepthRangepicket(1,1) logDepthRangepicket(1,2)]);
 xlabel('Gamma Ray (gAPI)')
 ylabel('Depth (meters)')
 legend('Gamma Ray')
 
 subplot(1,3,2)
-plot(logNphi,logdepth,'g')%neutron
+plot(logNphipicket,logdepthpicket,'g')%neutron
 xlim([logNphiXaxisRange(1,1) logNphiXaxisRange(1,2)])
-ylim([logDepthRange(1,1) logDepthRange(1,2)])
+ylim([logDepthRangepicket(1,1) logDepthRangepicket(1,2)])
 axis ij
 set(gca,'XDir','reverse')
 xlabel('density & neutron')
@@ -545,10 +553,10 @@ ax2 = axes('Position',[ax1_pos(1,1) ax1_pos(1,2) ax1_pos(1,3) ax1_pos(1,4)],...
     'YAxisLocation','right',...
     'Color','none');
 hold on
-plot(logRhob,logdepth,'parent',ax2,'color','r')%densitclosy
+plot(logRhobpicket,logdepthpicket,'parent',ax2,'color','r')%densitclosy
 axis ij
 xlim([logRhobXaxisRange(1,1) logRhobXaxisRange(1,2)]);
-ylim([logDepthRange(1,1) logDepthRange(1,2)]);
+ylim([logDepthRangepicket(1,1) logDepthRangepicket(1,2)]);
 set(ax2,'XColor','r');
 set(ax2,'YColor','r');
 hold on 
@@ -556,8 +564,9 @@ axis ij
 legend('RHOB')
 
 subplot(1,3,3)
-semilogx(logDresh, logdepth, 'Color', 'r')%deep resistivity.
+semilogx(logDreshpicket, logdepthpicket, 'Color', 'r')%deep resistivity.
 axis([logDreshXaxisRange(1,1) logDreshXaxisRange(1,2) logDepthRange(1,1) logDepthRange(1,2)])
+ylim([logDepthRangepicket(1,1) logDepthRangepicket(1,2)]);
 axis ij
 format long
 xlabel('resistivity')
@@ -578,31 +587,39 @@ text(xValue(3,1),yValue(3,1),'------Index for Resistivity-Porosity-----', ...
                 'Color', [0.9 0 1], ...
                 'FontSize',8);
 
-for i=1:size(logdepth,1) 
-   if logdepth(i,1)<min(yValue(1,1), yValue(2,1))
+for i=1:size(logdepthpicket,1) 
+   if logdepthpicket(i,1)<min(yValue(1,1), yValue(2,1))
        startRange = i;
    end  
-   if logdepth(i,1)<max(yValue(1,1), yValue(2,1))
+   if logdepthpicket(i,1)<max(yValue(1,1), yValue(2,1))
        endRange = i;
    end 
-   if logdepth(i,1)<yValue(3,1)
+   if logdepthpicket(i,1)<yValue(3,1)
        initalResPorIndex = i;
    end 
 end
 
-initalResistivity = logDresh(initalResPorIndex, 1);
-initalPorosity = porosityWithKerogen(initalResPorIndex, 1);
+logVshalepicket = (logECGRpicket-logSandLineHist)./(logShaleLineHist-logSandLineHist);
+logVshalepicket(logVshalepicket<=0) = 0.001; 
+logVshalepicket(logVshalepicket>1) = 0.999; 
+porosityjustmadeforpicket=(logRhobpicket-(densityShale.*logVshalepicket+densitySand.*(1-logVshalepicket)))./(densityFluid-(densityShale.*logVshalepicket+densitySand.*(1-logVshalepicket)));
+
+
+initalResistivity = logDreshpicket(initalResPorIndex, 1);
+
+initalPorosity = porosityjustmadeforpicket(initalResPorIndex, 1);
+%initalPorosity = porosityWithKerogen(initalResPorIndex, 1);
 
 %geothermal gradient 
 surfaceTemp = 14;
 tempGradient = 0.025;
-temperature = surfaceTemp+tempGradient.*logdepth;
+temperature = surfaceTemp+tempGradient.*logdepthpicket;
 resistivityArps = initalResistivity*(temperature(initalResPorIndex)+21.5)./(temperature+21.5);
 
 %-------------------------------------------------------------------------------------------------------------------------------------
 figure('units','normalized','outerposition',[0 0 1 1])
-picketlogDresh=logDresh(startRange:endRange);
-picketPorosity=porosityWithKerogen(startRange:endRange);
+picketlogDresh=logDreshpicket(startRange:endRange);
+picketPorosity=porosityjustmadeforpicket(startRange:endRange);
 loglog(picketlogDresh,picketPorosity,'o')
 hold on
 
