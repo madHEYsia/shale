@@ -647,8 +647,8 @@ while(check)
         %-------------------------------------------------------------------------------------------------------------------------------------
         close figure 4
         figure('units','normalized','outerposition',[0 0 1 1])
-        picketlogDresh=logDresh(startRange:endRange);
-        picketPorosity=porosityWithKerogen(startRange:endRange);
+        picketlogDresh=logDreshpicket(startRange:endRange);
+        picketPorosity=porosityjustmadeforpicket(startRange:endRange);
         loglog(picketlogDresh,picketPorosity,'o')
         hold on
 
@@ -661,8 +661,8 @@ while(check)
         loglog(x,y,'r');
 
         format long
-        xlim([picketplotXaxisRange(1,1) picketplotXaxisRange(1,2)])
-        ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
+        % xlim([picketplotXaxisRange(1,1) picketplotXaxisRange(1,2)])
+        % ylim([picketplotYaxisRange(1,1) picketplotYaxisRange(1,2)])
         legend('porosity & Resistivity')
         xlabel('porosity and resistivity')
         hold on 
